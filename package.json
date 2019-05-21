@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "babel-node app.ts --extensions '.ts','.js','.tsx','.jsx' | pino-pretty --colorize --translateTime"
+    "build": "next build",
+    "start": "babel-node server.ts --extensions '.ts','.js','.tsx','.jsx' | pino-pretty --colorize --translateTime"
   },
   "author": "",
   "license": "ISC",
@@ -15,13 +16,21 @@
     "@babel/node": "^7.2.2",
     "@babel/preset-env": "^7.4.4",
     "@babel/preset-typescript": "^7.3.3",
+    "@zeit/next-css": "^1.0.1",
+    "@zeit/next-sass": "^1.0.1",
+    "@zeit/next-typescript": "^1.1.1",
+    "express": "^4.17.0",
+    "next": "^8.1.0",
     "node-fetch": "^2.6.0",
     "pino": "^5.12.5",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "yauzl": "^2.10.0"
   },
   "devDependencies": {
+    "@babel/preset-react": "^7.0.0",
     "@types/yauzl": "^2.9.1",
     "pino-pretty": "^3.0.0"
   }
