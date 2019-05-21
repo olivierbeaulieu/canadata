@@ -5,20 +5,19 @@ import request from 'request-promise-native'
 import yauzl from 'yauzl'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
-const cubeId = '25100063'
-;(async () => {
+
+export async function getCubeDataAsCsv(cubeId: string): Promise<string> {
   const zipUrl = await getFullTableDownloadCSV(cubeId)
   logger.info(`Fetching data from API ${zipUrl}`)
 
   logger.info(`Fetching object from ${zipUrl}`)
   const zipAsBuffer = await request(zipUrl, { encoding: null })
-  console.log(zipAsBuffer)
 
   const zipfile = await getZipfileFromBuffer(zipAsBuffer)
   const files = await getFilesContentFromZipFile([`${cubeId}.csv`], zipfile)
 
-  console.log(Object.keys(files), files[`${cubeId}.csv`].length)
-})()
+  return files[`${cubeId}.csv`]
+}
 
 async function getFilesContentFromZipFile(
   filenames: string[],
@@ -31,7 +30,6 @@ async function getFilesContentFromZipFile(
     // Called once per file in the zipfile
     zipfile.on('entry', entry => {
       // Check if this entry was requested
-      console.log(filenames, entry.fileName)
       if (filenames.includes(entry.fileName) === false) return
 
       let fileContent = ''
