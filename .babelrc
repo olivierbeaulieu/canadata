@@ -3,10 +3,12 @@
     "@babel/preset-env",
     "@babel/preset-typescript",
     "@babel/preset-react",
-    "next"
+    "@zeit/next-typescript/babel",
+    "next/babel"
   ],
   "plugins": [
     "@babel/plugin-transform-regenerator",
-    "@babel/plugin-transform-runtime"
+    "@babel/plugin-transform-runtime",
+    "add-module-exports"
   ]
 }

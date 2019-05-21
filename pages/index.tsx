@@ -1,5 +1,8 @@
 import React from 'react'
-import numberFormat from 'underscore.string/numberFormat'
+import dayjs from 'dayjs'
+import PageHeader from '@atlaskit/page-header'
+import Page, { Grid, GridColumn } from '@atlaskit/page'
+
 import {
   LineChart,
   Line,
@@ -67,11 +70,22 @@ export default class IndexPage extends React.Component {
 
     const formatNumbers = value => new Intl.NumberFormat('en').format(value)
     const { processedData, seriesLabels } = this.processData(data)
-    const colors = ['#EFA52E', '#02B1B6', '#FF0054', '#58D481', '#EE6352']
+    const colors = [
+      '#EFA52E',
+      '#02B1B6',
+      '#FF0054',
+      '#58D481',
+      '#EE6352',
+      '#23F0C7',
+      '#EF767A',
+      '#7D7ABC',
+      '#6457A6',
+      '#FFE347',
+    ]
 
     return (
-      <div>
-        <h2>Crude Oil Production in Barrels</h2>
+      <Page>
+        <PageHeader>Crude Oil Production in Barrels</PageHeader>
 
         <ResponsiveContainer width={800} height={600}>
           <LineChart
@@ -79,14 +93,14 @@ export default class IndexPage extends React.Component {
             height={600}
             data={processedData}
             margin={{
-              top: 5,
+              top: 30,
               right: 30,
-              left: 20,
-              bottom: 5,
+              left: 30,
+              bottom: 30,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={entry => entry.date} />
+            <XAxis dataKey={entry => dayjs(entry.date).format("MMM 'YY")} />
             <YAxis />
             <Tooltip formatter={formatNumbers} />
             <Legend />
@@ -103,7 +117,7 @@ export default class IndexPage extends React.Component {
         </ResponsiveContainer>
 
         <pre>{JSON.stringify(processedData, null, '\t')}</pre>
-      </div>
+      </Page>
     )
   }
 }
