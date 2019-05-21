@@ -5,47 +5,110 @@ import request from 'request-promise-native'
 import yauzl from 'yauzl'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
-
-function getUrl(cubeId: string) {
-  return `https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/${cubeId}/en`
-}
-
 const cubeId = '25100063'
-const API_URL = getUrl(cubeId)
-logger.info(`Fetching ${API_URL}`)
+;(async () => {
+  const zipUrl = await getFullTableDownloadCSV(cubeId)
+  logger.info(`Fetching data from API ${zipUrl}`)
 
-fetch(API_URL)
-  .then(response => response.json())
-  .then(async (response: { status: string; object: string }) => {
-    const { status, object } = response
+  logger.info(`Fetching object from ${zipUrl}`)
+  const zipAsBuffer = await request(zipUrl, { encoding: null })
+  console.log(zipAsBuffer)
 
-    if (status !== 'SUCCESS') {
-      logger.error(response)
-      throw new Error('API call getFullTableDownloadCSV failed')
-    }
+  const zipfile = await getZipfileFromBuffer(zipAsBuffer)
+  const files = await getFilesContentFromZipFile([`${cubeId}.csv`], zipfile)
 
-    logger.info(`Fetching object from ${object}`)
+  console.log(Object.keys(files), files[`${cubeId}.csv`].length)
+})()
 
-    const zipAsBuffer = await request(object, { encoding: null })
-    console.log(zipAsBuffer)
+async function getFilesContentFromZipFile(
+  filenames: string[],
+  zipfile: yauzl.ZipFile
+): Promise<{ [key: string]: string }> {
+  return new Promise(async (resolve, reject) => {
+    const fileReadingPromises: Promise<any>[] = []
+    const filesContent = {}
 
-    yauzl.fromBuffer(zipAsBuffer, null, (err, zipfile) => {
-      if (err) throw err
+    // Called once per file in the zipfile
+    zipfile.on('entry', entry => {
+      // Check if this entry was requested
+      console.log(filenames, entry.fileName)
+      if (filenames.includes(entry.fileName) === false) return
 
-      zipfile.on('entry', entry => {
-        if (entry.fileName === `${cubeId}.csv`) {
-          logger.info(`Opening ${entry.fileName}`)
-          let csvData = ''
-          zipfile.openReadStream(entry, (err, readStream) => {
-            if (err) throw err
-            readStream.on('data', buffer => {
-              csvData += buffer.toString()
-            })
-            readStream.on('end', () => {
-              logger.info(`Finished reading ${entry.fileName}`)
-            })
+      let fileContent = ''
+      logger.info(`Opening ${entry.fileName}`)
+
+      // Add this operation to the list of promises to wait on before returning
+      const readFile = new Promise((resolve, reject) => {
+        zipfile.openReadStream(entry, (err, readStream) => {
+          if (err) {
+            reject(err)
+            return
+          }
+
+          readStream.on('data', buffer => {
+            fileContent += buffer.toString()
           })
-        }
+          readStream.on('end', () => {
+            logger.info(`Finished reading ${entry.fileName}`)
+            filesContent[entry.fileName] = fileContent
+            resolve()
+          })
+        })
       })
+
+      fileReadingPromises.push(readFile)
+    })
+
+    zipfile.on('end', async () => {
+      await Promise.all(fileReadingPromises)
+      resolve(filesContent)
     })
   })
+}
+// if (entry.fileName === `${cubeId}.csv`) {
+//   logger.info(`Opening ${entry.fileName}`)
+//   let csvData = ''
+//   zipfile.openReadStream(entry, (err, readStream) => {
+//     if (err) throw err
+//     readStream.on('data', buffer => {
+//       csvData += buffer.toString()
+//     })
+//     readStream.on('end', () => {
+//       logger.info(`Finished reading ${entry.fileName}`)
+//     })
+//   })
+// }
+// return
+
+async function getZipfileFromBuffer(buffer: Buffer): Promise<yauzl.ZipFile> {
+  return new Promise((resolve, reject) => {
+    yauzl.fromBuffer(buffer, null, (err, zipfile) => {
+      if (err) {
+        reject(err)
+        return
+      }
+
+      resolve(zipfile)
+    })
+  })
+}
+
+async function getFullTableDownloadCSV(cubeId: string): Promise<string> {
+  const url = `https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/${cubeId}/en`
+
+  interface Response {
+    status: string
+    object: string
+  }
+  const response: Response = await fetch(url).then(response => response.json())
+  const { status, object } = response
+
+  if (status !== 'SUCCESS') {
+    logger.error(response)
+    throw new Error(
+      'API Request getFullTableDownloadCSV returned a status different from SUCCESS'
+    )
+  }
+
+  return object
+}
