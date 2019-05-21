@@ -1,0 +1,24 @@
+{
+  "name": "canadagraphs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "babel-node app.ts --extensions '.ts','.js','.tsx','.jsx' | pino-pretty --colorize --translateTime"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/node": "^7.2.2",
+    "@babel/preset-env": "^7.4.4",
+    "@babel/preset-typescript": "^7.3.3",
+    "node-fetch": "^2.6.0",
+    "pino": "^5.12.5"
+  },
+  "devDependencies": {
+    "pino-pretty": "^3.0.0"
+  }
+}
