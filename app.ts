@@ -65,20 +65,6 @@ async function getFilesContentFromZipFile(
     })
   })
 }
-// if (entry.fileName === `${cubeId}.csv`) {
-//   logger.info(`Opening ${entry.fileName}`)
-//   let csvData = ''
-//   zipfile.openReadStream(entry, (err, readStream) => {
-//     if (err) throw err
-//     readStream.on('data', buffer => {
-//       csvData += buffer.toString()
-//     })
-//     readStream.on('end', () => {
-//       logger.info(`Finished reading ${entry.fileName}`)
-//     })
-//   })
-// }
-// return
 
 async function getZipfileFromBuffer(buffer: Buffer): Promise<yauzl.ZipFile> {
   return new Promise((resolve, reject) => {
@@ -93,6 +79,7 @@ async function getZipfileFromBuffer(buffer: Buffer): Promise<yauzl.ZipFile> {
   })
 }
 
+// Calls the StatsCan API and returns the 'object' property of the response
 async function getFullTableDownloadCSV(cubeId: string): Promise<string> {
   const url = `https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/${cubeId}/en`
 
