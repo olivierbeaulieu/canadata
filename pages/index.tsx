@@ -1,7 +1,8 @@
 import React from 'react'
 import dayjs from 'dayjs'
 import Title from 'antd/lib/typography/title'
-import { PageHeader, Select, Divider } from 'antd'
+import randomColor from 'randomcolor'
+import { Select, Divider } from 'antd'
 import {
   LineChart,
   Line,
@@ -15,19 +16,6 @@ import {
 
 const formatNumbers = (value: number) =>
   new Intl.NumberFormat('en').format(value)
-
-const colors = [
-  '#EFA52E',
-  '#02B1B6',
-  '#FF0054',
-  '#58D481',
-  '#EE6352',
-  '#23F0C7',
-  '#EF767A',
-  '#7D7ABC',
-  '#6457A6',
-  '#FFE347',
-]
 
 interface DataEntry {
   GEO: string
@@ -57,6 +45,7 @@ interface State {
   dimensionFilters: {
     [key: string]: string
   }
+  colors: string[]
 }
 
 const DimensionSelect = (options: {
@@ -98,6 +87,10 @@ export default class IndexPage extends React.Component<Props, State> {
         acc[dimensionName] = dimensions[dimensionName][0].name
         return acc
       }, {}),
+      colors: randomColor({
+        count: dimensions['Geography'].length,
+        // luminosity: 'bright',
+      }),
     }
   }
 
@@ -207,8 +200,6 @@ export default class IndexPage extends React.Component<Props, State> {
 
         <ResponsiveContainer width="100%" height={600}>
           <LineChart
-            width="100%"
-            height={600}
             data={processedData}
             margin={{
               top: 30,
@@ -232,7 +223,7 @@ export default class IndexPage extends React.Component<Props, State> {
                     return entry.values[dimensionName]
                   }}
                   name={dimensionName}
-                  stroke={colors[index] || '#82ca9d'}
+                  stroke={this.state.colors[index] || '#82ca9d'}
                 />
               )
             })}

@@ -4,7 +4,7 @@ import { Layout, Menu, Icon } from 'antd'
 import 'antd/dist/antd.less'
 import '../styles.less'
 
-const { Header, Sider, Footer, Content } = Layout
+const { Sider, Footer, Content } = Layout
 
 interface Props {
   Component: {}

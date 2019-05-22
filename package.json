@@ -30,6 +30,7 @@
     "next-transpile-modules": "^2.3.1",
     "node-fetch": "^2.6.0",
     "pino": "^5.12.5",
+    "randomcolor": "^0.5.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-intl": "^2.9.0",
