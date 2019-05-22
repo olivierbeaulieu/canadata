@@ -1,7 +1,7 @@
 import React from 'react'
 import dayjs from 'dayjs'
 import Title from 'antd/lib/typography/title'
-import { PageHeader } from 'antd'
+import { PageHeader, Select } from 'antd'
 import {
   LineChart,
   Line,
@@ -16,6 +16,19 @@ import {
 const formatNumbers = (value: number) =>
   new Intl.NumberFormat('en').format(value)
 
+const colors = [
+  '#EFA52E',
+  '#02B1B6',
+  '#FF0054',
+  '#58D481',
+  '#EE6352',
+  '#23F0C7',
+  '#EF767A',
+  '#7D7ABC',
+  '#6457A6',
+  '#FFE347',
+]
+
 interface DataEntry {
   GEO: string
   REF_DATE: string
@@ -23,13 +36,29 @@ interface DataEntry {
   UOM: string
 }
 
+interface Dimension {
+  id: number
+  parentId: number
+  name: string
+}
+
 interface Props {
   data: DataEntry[]
   metadata: string
 }
 
-export default class IndexPage extends React.Component<Props> {
+interface State {
+  unitOfMeasure?: Dimension
+}
+
+export default class IndexPage extends React.Component<Props, State> {
   props: Props
+  state: State
+
+  constructor(props: Props) {
+    super(props)
+    this.state = {}
+  }
 
   static getInitialProps({ query }: { query: Props }) {
     const { data, metadata } = query
@@ -66,7 +95,7 @@ export default class IndexPage extends React.Component<Props> {
   getProductIdFromMetadata(metadata) {
     return metadata[0][0]['Product Id']
   }
-  getDimensionsFromMetadata(metadata) {
+  getDimensionsFromMetadata(metadata): { [key: string]: Dimension } {
     const dimensions = {}
     const dimensionsById = []
 
@@ -91,31 +120,20 @@ export default class IndexPage extends React.Component<Props> {
   }
 
   render() {
-    // TODO: merge in one loop
+    const metadata = JSON.parse(this.props.metadata)
+    const dimensions = this.getDimensionsFromMetadata(metadata)
+    const unitsOfMeasure = dimensions['Units of measure']
+
+    const uom = this.state.unitOfMeasure || unitsOfMeasure[0]
+
     const data = this.props.data.filter(
       entry =>
-        entry.UOM === 'Barrels' &&
+        entry.UOM === uom.name &&
         // (entry.GEO === 'Alberta' || entry.GEO === 'Saskatchewan') &&
         entry['Supply and disposition'] === 'Crude oil production'
     )
 
-    const metadata = JSON.parse(this.props.metadata)
-
-    const dimensions = this.getDimensionsFromMetadata(metadata)
-
     const processedData = this.processData(data)
-    const colors = [
-      '#EFA52E',
-      '#02B1B6',
-      '#FF0054',
-      '#58D481',
-      '#EE6352',
-      '#23F0C7',
-      '#EF767A',
-      '#7D7ABC',
-      '#6457A6',
-      '#FFE347',
-    ]
 
     return (
       <div>
@@ -124,6 +142,21 @@ export default class IndexPage extends React.Component<Props> {
           title={<Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>}
           subTitle={`Product Id ${this.getProductIdFromMetadata(metadata)}`}
         />
+
+        <Title level={3}>Units of measure</Title>
+        <Select
+          defaultValue={unitsOfMeasure[0].name}
+          style={{ width: 180 }}
+          onChange={dimensionId => {
+            this.setState({
+              unitOfMeasure: unitsOfMeasure.find(uom => uom.id === dimensionId),
+            })
+          }}
+        >
+          {unitsOfMeasure.map(dimension => (
+            <Select.Option value={dimension.id}>{dimension.name}</Select.Option>
+          ))}
+        </Select>
 
         <ResponsiveContainer width={800} height={600}>
           <LineChart
