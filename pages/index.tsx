@@ -1,7 +1,7 @@
 import React from 'react'
 import dayjs from 'dayjs'
 import Title from 'antd/lib/typography/title'
-import { PageHeader, Select } from 'antd'
+import { PageHeader, Select, Divider } from 'antd'
 import {
   LineChart,
   Line,
@@ -42,13 +42,41 @@ interface Dimension {
   name: string
 }
 
+interface DimensionsDict {
+  [key: string]: Dimension[]
+}
+
 interface Props {
   data: DataEntry[]
   metadata: string
 }
 
 interface State {
-  unitOfMeasure?: Dimension
+  metadata: {}[]
+  dimensions: DimensionsDict
+  dimensionFilters: {
+    [key: string]: string
+  }
+}
+
+const DimensionSelect = (options: {
+  dimensions: Dimension[]
+  onChange: any
+  defaultValue: string
+}) => {
+  const { dimensions, onChange, defaultValue } = options
+
+  return (
+    <Select
+      defaultValue={defaultValue}
+      dropdownMatchSelectWidth={false}
+      onChange={onChange}
+    >
+      {dimensions.map(dimension => (
+        <Select.Option value={dimension.id}>{dimension.name}</Select.Option>
+      ))}
+    </Select>
+  )
 }
 
 export default class IndexPage extends React.Component<Props, State> {
@@ -57,7 +85,20 @@ export default class IndexPage extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
-    this.state = {}
+
+    const metadata = JSON.parse(props.metadata)
+    const dimensions = this.getDimensionsFromMetadata(metadata)
+
+    this.state = {
+      metadata,
+      dimensions,
+      dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionName) => {
+        if (dimensionName === 'Geography') return acc
+
+        acc[dimensionName] = dimensions[dimensionName][0].name
+        return acc
+      }, {}),
+    }
   }
 
   static getInitialProps({ query }: { query: Props }) {
@@ -89,13 +130,13 @@ export default class IndexPage extends React.Component<Props, State> {
     return processedData
   }
 
-  getTitleFromMetadata(metadata) {
+  getTitleFromMetadata(metadata): string {
     return metadata[0][0]['Cube Title']
   }
-  getProductIdFromMetadata(metadata) {
+  getProductIdFromMetadata(metadata): string {
     return metadata[0][0]['Product Id']
   }
-  getDimensionsFromMetadata(metadata): { [key: string]: Dimension } {
+  getDimensionsFromMetadata(metadata): DimensionsDict {
     const dimensions = {}
     const dimensionsById = []
 
@@ -120,47 +161,53 @@ export default class IndexPage extends React.Component<Props, State> {
   }
 
   render() {
-    const metadata = JSON.parse(this.props.metadata)
-    const dimensions = this.getDimensionsFromMetadata(metadata)
-    const unitsOfMeasure = dimensions['Units of measure']
+    const { metadata, dimensions, dimensionFilters } = this.state
 
-    const uom = this.state.unitOfMeasure || unitsOfMeasure[0]
-
-    const data = this.props.data.filter(
-      entry =>
-        entry.UOM === uom.name &&
-        // (entry.GEO === 'Alberta' || entry.GEO === 'Saskatchewan') &&
-        entry['Supply and disposition'] === 'Crude oil production'
-    )
+    const data = this.props.data.filter(entry => {
+      return (
+        entry['Units of measure'] ===
+          this.state.dimensionFilters['Units of measure'] &&
+        entry['Supply and disposition'] ===
+          this.state.dimensionFilters['Supply and disposition']
+      )
+    })
 
     const processedData = this.processData(data)
 
     return (
       <div>
-        <PageHeader
-          // onBack={() => null}
-          title={<Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>}
-          subTitle={`Product Id ${this.getProductIdFromMetadata(metadata)}`}
-        />
+        <Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>
+        <Divider />
 
-        <Title level={3}>Units of measure</Title>
-        <Select
-          defaultValue={unitsOfMeasure[0].name}
-          style={{ width: 180 }}
-          onChange={dimensionId => {
-            this.setState({
-              unitOfMeasure: unitsOfMeasure.find(uom => uom.id === dimensionId),
-            })
-          }}
-        >
-          {unitsOfMeasure.map(dimension => (
-            <Select.Option value={dimension.id}>{dimension.name}</Select.Option>
-          ))}
-        </Select>
+        {Object.keys(dimensionFilters).map(dimensionName => {
+          return (
+            <>
+              <Title level={3}>{dimensionName}</Title>
+              <DimensionSelect
+                defaultValue={dimensionFilters[dimensionName]}
+                dimensions={dimensions[dimensionName]}
+                onChange={dimensionId => {
+                  this.setState((state, props) => ({
+                    dimensionFilters: Object.assign(
+                      {},
+                      state.dimensionFilters,
+                      {
+                        [dimensionName]: dimensions[dimensionName].find(
+                          uom => uom.id === dimensionId
+                        ).name,
+                      }
+                    ),
+                  }))
+                }}
+              />
+              <Divider />
+            </>
+          )
+        })}
 
-        <ResponsiveContainer width={800} height={600}>
+        <ResponsiveContainer width="100%" height={600}>
           <LineChart
-            width={800}
+            width="100%"
             height={600}
             data={processedData}
             margin={{
