@@ -1,7 +1,7 @@
 import React from 'react'
 import dayjs from 'dayjs'
-import PageHeader from '@atlaskit/page-header'
-import Page, { Grid, GridColumn } from '@atlaskit/page'
+import Title from 'antd/lib/typography/title'
+import { PageHeader } from 'antd'
 
 import {
   LineChart,
@@ -13,6 +13,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+// import { Props } from '@atlaskit/icon/glyph/app-switcher'
 
 interface DataEntry {
   GEO: string
@@ -21,12 +22,19 @@ interface DataEntry {
   UOM: string
 }
 
-export default class IndexPage extends React.Component {
-  props: {
-    jsonData: DataEntry[]
-  }
+// interface DataPoint {
+//   date: string
+//   values: {
+//     [key: string]: number
+//   }
+// }
 
-  static getInitialProps({ query }) {
+interface Props {
+  jsonData: DataEntry[]
+}
+
+export default class IndexPage extends React.Component<Props> {
+  static getInitialProps({ query }: { query: Props }) {
     const { jsonData } = query
 
     return {
@@ -36,11 +44,13 @@ export default class IndexPage extends React.Component {
 
   processData(data: DataEntry[]) {
     const processedData = []
-    const seriesLabels = {}
-    let current = null
+    const dimensions: {
+      [key: string]: boolean
+    } = {}
+    let current: any = null
 
     for (let entry of data) {
-      if (current === null || current.date !== entry.REF_DATE) {
+      if (!current || current.date !== entry.REF_DATE) {
         // Create a new entry
         current = {
           date: entry.REF_DATE,
@@ -49,12 +59,12 @@ export default class IndexPage extends React.Component {
         processedData.push(current)
       }
 
-      seriesLabels[entry.GEO] = 1
+      dimensions[entry.GEO] = true
       current.values[entry.GEO] = Number(entry.VALUE)
     }
 
     return {
-      seriesLabels: Object.keys(seriesLabels),
+      dimensions: Object.keys(dimensions),
       processedData: processedData,
     }
   }
@@ -68,8 +78,10 @@ export default class IndexPage extends React.Component {
         entry['Supply and disposition'] === 'Crude oil production'
     )
 
-    const formatNumbers = value => new Intl.NumberFormat('en').format(value)
-    const { processedData, seriesLabels } = this.processData(data)
+    const formatNumbers = (value: number) =>
+      new Intl.NumberFormat('en').format(value)
+
+    const { processedData, dimensions } = this.processData(data)
     const colors = [
       '#EFA52E',
       '#02B1B6',
@@ -84,8 +96,12 @@ export default class IndexPage extends React.Component {
     ]
 
     return (
-      <Page>
-        <PageHeader>Crude Oil Production in Barrels</PageHeader>
+      <div>
+        <PageHeader
+          // onBack={() => null}
+          title={<Title level={2}>Crude Oil Production</Title>}
+          subTitle="In Barrels"
+        />
 
         <ResponsiveContainer width={800} height={600}>
           <LineChart
@@ -105,7 +121,7 @@ export default class IndexPage extends React.Component {
             <Tooltip formatter={formatNumbers} />
             <Legend />
 
-            {seriesLabels.map((label, index) => (
+            {dimensions.map((label, index) => (
               <Line
                 type="monotone"
                 dataKey={entry => entry.values[label]}
@@ -115,9 +131,8 @@ export default class IndexPage extends React.Component {
             ))}
           </LineChart>
         </ResponsiveContainer>
-
-        <pre>{JSON.stringify(processedData, null, '\t')}</pre>
-      </Page>
+        {/* <pre>{JSON.stringify(processedData, null, '\t')}</pre> */}
+      </div>
     )
   }
 }

@@ -34,13 +34,7 @@ app
         csvString = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
       }
 
-      const jsonData = await csvToJson({
-        // noheader: true,
-        // output: 'csv',
-      }).fromString(csvString)
-      // .then(csvRow => {
-      //   console.log(csvRow) // => [["1","2","3"], ["4","5","6"], ["7","8","9"]]
-      // })
+      const jsonData = await csvToJson().fromString(csvString)
 
       app.render(req, res, '/index', {
         jsonData,

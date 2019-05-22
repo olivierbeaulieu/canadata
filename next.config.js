@@ -1,62 +1,41 @@
-const withSass = require('@zeit/next-sass')
-const withCSS = require('@zeit/next-css')
-const withTypescript = require('@zeit/next-typescript')
-const withTM = require('next-transpile-modules')
-const withPlugins = require('next-compose-plugins')
+;(() => {
+  const withCSS = require('@zeit/next-css')
+  const withLess = require('@zeit/next-less')
+  const withTypescript = require('@zeit/next-typescript')
+  const withPlugins = require('next-compose-plugins')
 
-module.exports = withPlugins(
-  [
-    [
-      withTM,
-      {
-        transpileModules: [
-          //       '@atlaskit/analytics-gas-types',
-          //       '@atlaskit/analytics-namespaced-context',
-          //       '@atlaskit/analytics-next',
-          //       '@atlaskit/atlassian-switcher',
-          //       '@atlaskit/avatar',
-          //       '@atlaskit/badge',
-          //       '@atlaskit/blanket',
-          //       '@atlaskit/button',
-          //       '@atlaskit/code',
-          //       '@atlaskit/css-reset',
-          //       '@atlaskit/docs',
-          //       '@atlaskit/drawer',
-          //       '@atlaskit/dropdown-menu',
-          //       '@atlaskit/droplist',
-          //       '@atlaskit/global-navigation',
-          //       // '@atlaskit/icon',
-          //       '@atlaskit/item',
-          //       '@atlaskit/layer',
-          //       '@atlaskit/logo',
-          //       '@atlaskit/lozenge',
-          //       '@atlaskit/navigation-next',
-          //       '@atlaskit/notification-indicator',
-          //       '@atlaskit/notification-log-client',
-          '@atlaskit/page',
-          '@atlaskit/page-header',
-          //       '@atlaskit/popper',
-          //       '@atlaskit/portal',
-          //       // '@atlaskit/select',
-          //       '@atlaskit/spinner',
-          '@atlaskit/theme',
-          //       '@atlaskit/tooltip',
-          //       '@atlaskit/type-helpers',
-          //       '@atlaskit/util-service-support',
-        ],
-      },
-    ],
-    withTypescript,
-    withCSS,
-    withSass,
-  ],
-  {
-    webpack(config, options) {
-      if (options.dev) {
-        config.devtool = 'cheap-module-source-map'
-      }
-
-      return config
-    },
+  // fix: prevents error when .less files are required by node
+  if (typeof require !== 'undefined') {
+    require.extensions['.less'] = file => {}
   }
-)
+
+  module.exports = withPlugins(
+    [
+      withTypescript,
+      withCSS,
+      [
+        withLess,
+        {
+          lessLoaderOptions: {
+            javascriptEnabled: true,
+            modifyVars: {
+              'font-family': `'Open Sans', Helvetica, Arial, sans-serif`,
+              'layout-sider-background': '#0747a5',
+              'menu-dark-bg': 'none',
+              'menu-dark-item-active-bg': '#065ddc',
+            },
+          },
+        },
+      ],
+    ],
+    {
+      webpack(config, { buildId, dev, isServer, defaultLoaders, webpack }) {
+        if (dev) {
+          config.devtool = 'cheap-module-source-map'
+        }
+
+        return config
+      },
+    }
+  )
+})()

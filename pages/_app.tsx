@@ -1,49 +1,17 @@
 import React from 'react'
 import App, { Container } from 'next/app'
-import '@atlaskit/css-reset'
-// import GlobalNavigation from '@atlaskit/global-navigation'
-// import EmojiAtlassianIcon from '@atlaskit/icon/glyph/emoji/atlassian'
-// import AppSwitcherIcon from '@atlaskit/icon/glyph/app-switcher'
-// import {
-// GlobalItem,
-// LayoutManager,
-// NavigationProvider,
-// } from '@atlaskit/navigation-next'
+import { Layout, Menu, Icon } from 'antd'
+import 'antd/dist/antd.less'
+import '../styles.less'
 
-// const AppSwitcherComponent = props => (
-//   <GlobalItem
-//     {...props}
-//     icon={AppSwitcherIcon}
-//     id="test"
-//     onClick={() => console.log('AppSwitcher clicked')}
-//   />
-// )
+const { Header, Sider, Footer, Content } = Layout
 
-// TODO: make onClicks targets show up on page instead of console.logs
-// const Global = () => (
-//   <GlobalNavigation
-//     productIcon={EmojiAtlassianIcon}
-//     productHref="#"
-//     onProductClick={() => console.log('product clicked')}
-//     onCreateClick={() => console.log('create clicked')}
-//     onSearchClick={() => console.log('search clicked')}
-//     onStarredClick={() => console.log('starred clicked')}
-//     onHelpClick={() => console.log('help clicked')}
-//     helpItems={() => <div />}
-//     onNotificationClick={() => console.log('notification clicked')}
-//     appSwitcherComponent={AppSwitcherComponent}
-//     appSwitcherTooltip="Switch to ..."
-//     onSettingsClick={() => console.log('settings clicked')}
-//     loginHref="#login"
-//   />
-// )
+interface Props {
+  Component: {}
+  pageProps: {}
+}
 
-class MyApp extends App {
-  props: {
-    Component
-    pageProps
-  }
-
+class MyApp extends App<Props> {
   static async getInitialProps({ Component, ctx }) {
     let pageProps = {}
 
@@ -59,17 +27,49 @@ class MyApp extends App {
 
     return (
       <Container>
-        {/* <NavigationProvider>
-           <LayoutManager
-            globalNavigation={() => null}
-            productNavigation={() => null}
-            containerNavigation={() => null}
-          >*/}
-        <div style={{ padding: '32px 40px' }}>
-          <Component {...pageProps} />
-        </div>
-        {/*   </LayoutManager>
-        </NavigationProvider>*/}
+        <link
+          href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
+          rel="stylesheet"
+        />
+        <Layout hasSider={true}>
+          <Sider
+            breakpoint="lg"
+            collapsedWidth="0"
+            onBreakpoint={broken => {
+              console.log(broken)
+            }}
+            onCollapse={(collapsed, type) => {
+              console.log(collapsed, type)
+            }}
+          >
+            <div className="logo">Graph eh?</div>
+            <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+              <Menu.Item key="1">
+                <Icon type="user" />
+                <span className="nav-text">Foo</span>
+              </Menu.Item>
+              <Menu.Item key="2">
+                <Icon type="video-camera" />
+                <span className="nav-text">Bar</span>
+              </Menu.Item>
+              <Menu.Item key="3">
+                <Icon type="upload" />
+                <span className="nav-text">Baz</span>
+              </Menu.Item>
+            </Menu>
+          </Sider>
+          <Layout style={{ minHeight: '100vh' }}>
+            {/* <Header style={{ background: '#fff', padding: 0 }} /> */}
+            <Content style={{ margin: '24px 16px 0' }}>
+              <div style={{ padding: 24, background: '#fff' }}>
+                <Component {...pageProps} />
+              </div>
+            </Content>
+            <Footer style={{ textAlign: 'center' }}>
+              Acme Inc. ©2018 Created by olvrb
+            </Footer>
+          </Layout>
+        </Layout>
       </Container>
     )
   }
