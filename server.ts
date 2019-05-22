@@ -25,7 +25,8 @@ app
     // });
 
     server.get('/', async (req, res) => {
-      const cubeId = '25100063'
+      // const cubeId = '25100063' // Supply and disposition of crude oil and equivalent1
+      const cubeId = '36100450' // Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
       let csvData
 
       if (cubeCache[cubeId]) {
