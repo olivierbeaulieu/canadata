@@ -45,15 +45,15 @@ class MyApp extends App<Props> {
             <div className="logo">Graph eh?</div>
             <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
               <Menu.Item key="1">
-                <Icon type="user" />
+                <Icon type="area-chart" />
                 <span className="nav-text">Foo</span>
               </Menu.Item>
               <Menu.Item key="2">
-                <Icon type="video-camera" />
+                <Icon type="pie-chart" />
                 <span className="nav-text">Bar</span>
               </Menu.Item>
               <Menu.Item key="3">
-                <Icon type="upload" />
+                <Icon type="radar-chart" />
                 <span className="nav-text">Baz</span>
               </Menu.Item>
             </Menu>

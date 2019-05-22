@@ -2,7 +2,6 @@ import React from 'react'
 import dayjs from 'dayjs'
 import Title from 'antd/lib/typography/title'
 import { PageHeader } from 'antd'
-
 import {
   LineChart,
   Line,
@@ -13,7 +12,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
-// import { Props } from '@atlaskit/icon/glyph/app-switcher'
+
+const formatNumbers = (value: number) =>
+  new Intl.NumberFormat('en').format(value)
 
 interface DataEntry {
   GEO: string
@@ -22,31 +23,25 @@ interface DataEntry {
   UOM: string
 }
 
-// interface DataPoint {
-//   date: string
-//   values: {
-//     [key: string]: number
-//   }
-// }
-
 interface Props {
-  jsonData: DataEntry[]
+  data: DataEntry[]
+  metadata: string
 }
 
 export default class IndexPage extends React.Component<Props> {
+  props: Props
+
   static getInitialProps({ query }: { query: Props }) {
-    const { jsonData } = query
+    const { data, metadata } = query
 
     return {
-      jsonData,
+      data,
+      metadata,
     }
   }
 
   processData(data: DataEntry[]) {
     const processedData = []
-    const dimensions: {
-      [key: string]: boolean
-    } = {}
     let current: any = null
 
     for (let entry of data) {
@@ -59,29 +54,56 @@ export default class IndexPage extends React.Component<Props> {
         processedData.push(current)
       }
 
-      dimensions[entry.GEO] = true
       current.values[entry.GEO] = Number(entry.VALUE)
     }
 
-    return {
-      dimensions: Object.keys(dimensions),
-      processedData: processedData,
-    }
+    return processedData
+  }
+
+  getTitleFromMetadata(metadata) {
+    return metadata[0][0]['Cube Title']
+  }
+  getProductIdFromMetadata(metadata) {
+    return metadata[0][0]['Product Id']
+  }
+  getDimensionsFromMetadata(metadata) {
+    const dimensions = {}
+    const dimensionsById = []
+
+    // Initialize the dimensions
+    metadata[1].forEach(entry => {
+      const id = entry['Dimension ID']
+      const name = entry['Dimension name']
+      dimensions[name] = dimensionsById[id] = []
+    })
+
+    // Populate the dimensions
+    metadata[2].forEach(entry => {
+      const id = entry['Dimension ID']
+      dimensionsById[id].push({
+        name: entry['Member Name'],
+        id: entry['Member ID'],
+        parentId: entry['Parent Member ID'],
+      })
+    })
+
+    return dimensions
   }
 
   render() {
     // TODO: merge in one loop
-    const data = this.props.jsonData.filter(
+    const data = this.props.data.filter(
       entry =>
         entry.UOM === 'Barrels' &&
         // (entry.GEO === 'Alberta' || entry.GEO === 'Saskatchewan') &&
         entry['Supply and disposition'] === 'Crude oil production'
     )
 
-    const formatNumbers = (value: number) =>
-      new Intl.NumberFormat('en').format(value)
+    const metadata = JSON.parse(this.props.metadata)
 
-    const { processedData, dimensions } = this.processData(data)
+    const dimensions = this.getDimensionsFromMetadata(metadata)
+
+    const processedData = this.processData(data)
     const colors = [
       '#EFA52E',
       '#02B1B6',
@@ -99,8 +121,8 @@ export default class IndexPage extends React.Component<Props> {
       <div>
         <PageHeader
           // onBack={() => null}
-          title={<Title level={2}>Crude Oil Production</Title>}
-          subTitle="In Barrels"
+          title={<Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>}
+          subTitle={`Product Id ${this.getProductIdFromMetadata(metadata)}`}
         />
 
         <ResponsiveContainer width={800} height={600}>
@@ -121,17 +143,22 @@ export default class IndexPage extends React.Component<Props> {
             <Tooltip formatter={formatNumbers} />
             <Legend />
 
-            {dimensions.map((label, index) => (
-              <Line
-                type="monotone"
-                dataKey={entry => entry.values[label]}
-                name={label}
-                stroke={colors[index] || '#82ca9d'}
-              />
-            ))}
+            {dimensions['Geography'].map((dimension, index) => {
+              const dimensionName = dimension.name
+              return (
+                <Line
+                  type="natural"
+                  dataKey={entry => {
+                    return entry.values[dimensionName]
+                  }}
+                  name={dimensionName}
+                  stroke={colors[index] || '#82ca9d'}
+                />
+              )
+            })}
           </LineChart>
         </ResponsiveContainer>
-        {/* <pre>{JSON.stringify(processedData, null, '\t')}</pre> */}
+        {/* <pre>{this.props.metadata}</pre> */}
       </div>
     )
   }

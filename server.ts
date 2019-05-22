@@ -26,18 +26,24 @@ app
 
     server.get('/', async (req, res) => {
       const cubeId = '25100063'
-      let csvString
+      let csvData
 
       if (cubeCache[cubeId]) {
-        csvString = cubeCache[cubeId]
+        csvData = cubeCache[cubeId]
       } else {
-        csvString = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
+        csvData = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
       }
 
-      const jsonData = await csvToJson().fromString(csvString)
+      const data = await csvToJson().fromString(csvData.data)
+      const metadata = await Promise.all(
+        csvData.metadata
+          .split('\n\n')
+          .map(async cube => await csvToJson().fromString(cube))
+      )
 
       app.render(req, res, '/index', {
-        jsonData,
+        data,
+        metadata: JSON.stringify(metadata),
       })
     })
 

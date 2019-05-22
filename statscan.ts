@@ -1,12 +1,13 @@
 import fetch from 'node-fetch'
 import pino from 'pino'
-import readline from 'readline'
 import request from 'request-promise-native'
 import yauzl from 'yauzl'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
-export async function getCubeDataAsCsv(cubeId: string): Promise<string> {
+export async function getCubeDataAsCsv(
+  cubeId: string
+): Promise<{ data: string; metadata: string }> {
   const zipUrl = await getFullTableDownloadCSV(cubeId)
   logger.info(`Fetching data from API ${zipUrl}`)
 
@@ -14,9 +15,18 @@ export async function getCubeDataAsCsv(cubeId: string): Promise<string> {
   const zipAsBuffer = await request(zipUrl, { encoding: null })
 
   const zipfile = await getZipfileFromBuffer(zipAsBuffer)
-  const files = await getFilesContentFromZipFile([`${cubeId}.csv`], zipfile)
 
-  return files[`${cubeId}.csv`]
+  const dataFilename = `${cubeId}.csv`
+  const metadataFilename = `${cubeId}_MetaData.csv`
+  const files = await getFilesContentFromZipFile(
+    [dataFilename, metadataFilename],
+    zipfile
+  )
+
+  return {
+    data: files[dataFilename],
+    metadata: files[metadataFilename],
+  }
 }
 
 async function getFilesContentFromZipFile(
