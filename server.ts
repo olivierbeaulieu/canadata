@@ -12,6 +12,10 @@ const PORT = process.env.CANADAGRAPHS_PORT || 3000
 
 const cubeCache = {}
 
+process.on('unhandledRejection', event => {
+  logger.error(event)
+})
+
 app
   .prepare()
   .then(async () => {
@@ -25,27 +29,33 @@ app
     // });
 
     server.get('/', async (req, res) => {
-      // const cubeId = '25100063' // Supply and disposition of crude oil and equivalent1
+      // '25100063' // Supply and disposition of crude oil and equivalent1
       const cubeId = '36100450' // Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
       let csvData
 
-      if (cubeCache[cubeId]) {
-        csvData = cubeCache[cubeId]
-      } else {
-        csvData = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
+      try {
+        if (cubeCache[cubeId]) {
+          csvData = cubeCache[cubeId]
+        } else {
+          csvData = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
+        }
+
+        const data = await csvToJson().fromString(csvData.data)
+        const metadata = await Promise.all(
+          csvData.metadata
+            .split('\n\n')
+            .map(async cube => csvToJson().fromString(cube))
+        )
+
+        app.render(req, res, '/index', {
+          data,
+          metadata: JSON.stringify(metadata),
+        })
+      } catch (e) {
+        logger.error(e)
+
+        app.render(req, res, '/graph-loading-error')
       }
-
-      const data = await csvToJson().fromString(csvData.data)
-      const metadata = await Promise.all(
-        csvData.metadata
-          .split('\n\n')
-          .map(async cube => await csvToJson().fromString(cube))
-      )
-
-      app.render(req, res, '/index', {
-        data,
-        metadata: JSON.stringify(metadata),
-      })
     })
 
     server.get('*', (req, res) => {

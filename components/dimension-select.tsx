@@ -1,34 +1,41 @@
 import React from 'react'
-import { Select } from 'antd'
+import { TreeSelect } from 'antd'
+import nestDimensions from '../utils/nest-dimensions'
+import slugify from 'underscore.string/slugify'
 
 export default function DimensionSelect(options: {
   dimensionsGroupName: string
-  dimensionsGroup: Dimension[]
+  dimensionsGroup: IDimension[]
   onChange: any
-  defaultValue: string
+  value: string
 }) {
-  const {
-    dimensionsGroup,
-    dimensionsGroupName,
-    onChange,
-    defaultValue,
-  } = options
+  const { dimensionsGroup, dimensionsGroupName, onChange, value } = options
+
+  const nestedDimensions = nestDimensions(dimensionsGroup)
+
+  const getRecursiveTreeNode = ({ dimension }: { dimension: IDimension }) => {
+    return (
+      <TreeSelect.TreeNode
+        key={`select-option-${slugify(dimension.name)}-${dimension.id}`}
+        value={dimension.id}
+        title={dimension.name}
+      >
+        {dimension.children.map(childDimension => {
+          return getRecursiveTreeNode({ dimension: childDimension })
+        })}
+      </TreeSelect.TreeNode>
+    )
+  }
 
   return (
-    <Select
+    <TreeSelect
       key={`select-option-${dimensionsGroupName}`}
-      defaultValue={defaultValue}
+      value={value}
+      treeDefaultExpandAll={true}
       dropdownMatchSelectWidth={false}
       onChange={onChange}
     >
-      {dimensionsGroup.map(dimension => (
-        <Select.Option
-          key={`select-option-${dimension.name}-${dimension.id}`}
-          value={dimension.id}
-        >
-          {dimension.name}
-        </Select.Option>
-      ))}
-    </Select>
+      {nestedDimensions.map(dimension => getRecursiveTreeNode({ dimension }))}
+    </TreeSelect>
   )
 }

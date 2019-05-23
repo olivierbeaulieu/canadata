@@ -1,9 +1,10 @@
-interface Dimension {
-  id: number
-  parentId: number
+interface IDimension {
+  id: string
+  parentId: string
   name: string
+  children: IDimension[]
 }
 
-interface DimensionsDict {
-  [key: string]: Dimension[]
+interface IDimensionsDict {
+  [key: string]: IDimension[]
 }

@@ -4,6 +4,7 @@ import Title from 'antd/lib/typography/title'
 import randomColor from 'randomcolor'
 import { Divider } from 'antd'
 import DimensionSelect from '../components/dimension-select'
+import slugify from 'underscore.string/slugify'
 import {
   LineChart,
   Line,
@@ -18,21 +19,26 @@ import {
 const formatNumbers = (value: number) =>
   new Intl.NumberFormat('en').format(value)
 
-interface DataEntry {
+interface IDataEntry {
   GEO: string
   REF_DATE: string
   VALUE: string
   UOM: string
 }
 
-interface Props {
-  data: DataEntry[]
+interface IDataPoint {
+  date: string
+  values: { [key: string]: number }
+}
+
+interface IProps {
+  data: IDataEntry[]
   metadata: string
 }
 
-interface State {
-  metadata: {}[]
-  dimensions: DimensionsDict
+interface IState {
+  metadata: Array<{}>
+  dimensions: IDimensionsDict
   frequency: string
   dimensionFilters: {
     [key: string]: string
@@ -43,36 +49,48 @@ interface State {
 function CustomTooltip(args: { active: boolean; payload: any; label: string }) {
   const { active, payload, label } = args
 
-  payload &&
-    payload.sort((a, b) => {
-      return Number(b.value) - Number(a.value)
-    })
+  if (!active || !payload) return null
 
-  if (active) {
-    return (
-      <div className="graph-tooltip">
-        <Title level={4}>{label}</Title>
-        <>
-          {payload.map(entry => {
-            return (
-              <p>
-                {entry.name}: {formatNumbers(entry.value)}
-              </p>
-            )
-          })}
-        </>
-      </div>
-    )
-  }
+  payload.sort((a, b) => {
+    return Number(b.value) - Number(a.value)
+  })
 
-  return null
+  return (
+    <div className="graph-tooltip">
+      <Title level={4}>{label}</Title>
+      <>
+        {payload.map(entry => {
+          return (
+            <p key={`graph-tooltip-entry-${slugify(entry.name)}`}>
+              {entry.name}: {formatNumbers(entry.value)}
+            </p>
+          )
+        })}
+      </>
+    </div>
+  )
 }
 
-export default class IndexPage extends React.Component<Props, State> {
-  props: Props
-  state: State
+function getLineDataKey(dimensionName: string) {
+  return entry => {
+    return entry.values[dimensionName]
+  }
+}
 
-  constructor(props: Props) {
+export default class IndexPage extends React.Component<IProps, IState> {
+  private static getInitialProps({ query }: { query: IProps }) {
+    const { data, metadata } = query
+
+    return {
+      data,
+      metadata,
+    }
+  }
+
+  public props: IProps
+  public state: IState
+
+  constructor(props: IProps) {
     super(props)
 
     const metadata = JSON.parse(props.metadata)
@@ -89,31 +107,47 @@ export default class IndexPage extends React.Component<Props, State> {
       }, {}),
       frequency: this.getFrequencyFromMetadata(metadata),
       colors: randomColor({
-        count: dimensions['Geography'].length,
+        count: dimensions.Geography.length,
         luminosity: 'dark',
       }),
     }
+
+    this.getXAxisDataKey = this.getXAxisDataKey.bind(this)
+    this.getOnDimensionSelectChange = this.getOnDimensionSelectChange.bind(this)
   }
 
-  static getInitialProps({ query }: { query: Props }) {
-    const { data, metadata } = query
+  private getXAxisDataKey(entry: IDataPoint): string {
+    const date = dayjs(entry.date)
 
-    return {
-      data,
-      metadata,
+    switch (this.state.frequency) {
+      case 'Annual':
+        return date.format('YYYY')
+
+      default:
+        return date.format("MMM 'YY")
     }
   }
 
-  processData(
-    data: DataEntry[]
-  ): {
-    date: string
-    values: { [key: string]: number }
-  }[] {
+  private getOnDimensionSelectChange(
+    dimensions: IDimensionsDict,
+    dimensionName: string
+  ): (dimensionId: string) => void {
+    return (dimensionId: string) => {
+      this.setState((state, props) => ({
+        dimensionFilters: Object.assign({}, state.dimensionFilters, {
+          [dimensionName]: dimensions[dimensionName].find(
+            uom => uom.id === dimensionId
+          ).name,
+        }),
+      }))
+    }
+  }
+
+  private processData(data: IDataEntry[]): IDataPoint[] {
     const processedData = []
     let current: any = null
 
-    for (let entry of data) {
+    for (const entry of data) {
       if (!current || current.date !== entry.REF_DATE) {
         current = {
           date: entry.REF_DATE,
@@ -128,16 +162,16 @@ export default class IndexPage extends React.Component<Props, State> {
     return processedData
   }
 
-  getTitleFromMetadata(metadata): string {
+  private getTitleFromMetadata(metadata): string {
     return metadata[0][0]['Cube Title']
   }
-  getProductIdFromMetadata(metadata): string {
+  private getProductIdFromMetadata(metadata): string {
     return metadata[0][0]['Product Id']
   }
-  getFrequencyFromMetadata(metadata): string {
-    return metadata[0][0]['Frequency']
+  private getFrequencyFromMetadata(metadata): string {
+    return metadata[0][0].Frequency
   }
-  getDimensionsFromMetadata(metadata): DimensionsDict {
+  private getDimensionsFromMetadata(metadata): IDimensionsDict {
     const dimensions = {}
     const dimensionsById = []
 
@@ -153,13 +187,14 @@ export default class IndexPage extends React.Component<Props, State> {
         name: entry['Member Name'],
         id: entry['Member ID'],
         parentId: entry['Parent Member ID'],
+        children: [],
       })
     })
 
     return dimensions
   }
 
-  render() {
+  public render(): React.ReactNode {
     const { metadata, dimensions, dimensionFilters } = this.state
 
     const data = this.props.data.filter(entry => {
@@ -167,8 +202,9 @@ export default class IndexPage extends React.Component<Props, State> {
       let match = true
 
       dimensionNames.forEach(dimensionName => {
-        if (entry[dimensionName] !== dimensionFilters[dimensionName])
+        if (entry[dimensionName] !== dimensionFilters[dimensionName]) {
           match = false
+        }
       })
 
       return match
@@ -181,27 +217,18 @@ export default class IndexPage extends React.Component<Props, State> {
         <Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>
         <Divider />
 
-        {Object.keys(dimensionFilters).map(dimensionName => {
+        {Object.keys(dimensionFilters).map(filterName => {
           return (
-            <React.Fragment key={`dimension-filter-group-${dimensionName}`}>
-              <Title level={3}>{dimensionName}</Title>
+            <React.Fragment key={`dimension-filter-group-${filterName}`}>
+              <Title level={3}>{filterName}</Title>
               <DimensionSelect
-                defaultValue={dimensionFilters[dimensionName]}
-                dimensionsGroupName={dimensionName}
-                dimensionsGroup={dimensions[dimensionName]}
-                onChange={dimensionId => {
-                  this.setState((state, props) => ({
-                    dimensionFilters: Object.assign(
-                      {},
-                      state.dimensionFilters,
-                      {
-                        [dimensionName]: dimensions[dimensionName].find(
-                          uom => uom.id === dimensionId
-                        ).name,
-                      }
-                    ),
-                  }))
-                }}
+                value={dimensionFilters[filterName]}
+                dimensionsGroupName={filterName}
+                dimensionsGroup={dimensions[filterName]}
+                onChange={this.getOnDimensionSelectChange(
+                  dimensions,
+                  filterName
+                )}
               />
               <Divider />
             </React.Fragment>
@@ -219,33 +246,19 @@ export default class IndexPage extends React.Component<Props, State> {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey={entry => {
-                const date = dayjs(entry.date)
-
-                switch (this.state.frequency) {
-                  case 'Annual':
-                    return date.format('YYYY')
-
-                  default:
-                    return date.format("MMM 'YY")
-                }
-              }}
-            />
+            <XAxis dataKey={this.getXAxisDataKey} />
             <YAxis tickFormatter={formatNumbers} />
             <Tooltip content={CustomTooltip} formatter={formatNumbers} />
             <Legend />
 
-            {dimensions['Geography'].map((dimension, index) => {
+            {dimensions.Geography.map((dimension, index) => {
               const dimensionName = dimension.name
               return (
                 <Line
                   type="natural"
                   strokeWidth={2}
                   key={`line-${dimensionName}`}
-                  dataKey={entry => {
-                    return entry.values[dimensionName]
-                  }}
+                  dataKey={getLineDataKey(dimensionName)}
                   name={dimensionName}
                   stroke={this.state.colors[index] || '#82ca9d'}
                 />
@@ -253,7 +266,7 @@ export default class IndexPage extends React.Component<Props, State> {
             })}
           </LineChart>
         </ResponsiveContainer>
-        <pre>{JSON.stringify(this.state.metadata, null, 4)}</pre>
+        {/* <pre>{JSON.stringify(this.state.metadata, null, 4)}</pre> */}
       </div>
     )
   }

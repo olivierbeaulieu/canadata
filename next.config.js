@@ -20,7 +20,7 @@
             javascriptEnabled: true,
             modifyVars: {
               'font-family': `'Open Sans', Helvetica, Arial, sans-serif`,
-              'layout-sider-background': '#0747a5',
+              'layout-sider-background': 'white',
               'menu-dark-bg': 'none',
               'menu-dark-item-active-bg': '#065ddc',
             },

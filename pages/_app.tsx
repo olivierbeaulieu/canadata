@@ -27,7 +27,7 @@ const LogoView = () => {
 
 const MenuView = () => {
   return (
-    <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+    <Menu mode="inline" defaultSelectedKeys={['1']}>
       <Menu.Item key="1">
         <Icon type="line-chart" />
         <span className="nav-text">Graphs</span>
@@ -52,13 +52,13 @@ const FooterView = () => {
   )
 }
 
-interface Props {
+interface IProps {
   Component: {}
   pageProps: {}
 }
 
-class MyApp extends App<Props> {
-  static async getInitialProps({ Component, ctx }) {
+class MyApp extends App<IProps> {
+  public static async getInitialProps({ Component, ctx }) {
     let pageProps = {}
 
     if (Component.getInitialProps) {
@@ -68,7 +68,7 @@ class MyApp extends App<Props> {
     return { pageProps }
   }
 
-  render() {
+  public render() {
     const { Component, pageProps } = this.props
 
     return (
@@ -100,7 +100,7 @@ class MyApp extends App<Props> {
               </div>
             </Content>
 
-            <FooterView />
+            {/* <FooterView /> */}
           </Layout>
         </Layout>
       </Container>

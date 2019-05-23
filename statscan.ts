@@ -8,9 +8,8 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 export async function getCubeDataAsCsv(
   cubeId: string
 ): Promise<{ data: string; metadata: string }> {
-  const zipUrl = await getFullTableDownloadCSV(cubeId)
-  logger.info(`Fetching data from API ${zipUrl}`)
-
+  // const zipUrl = await getFullTableDownloadCSV(cubeId)
+  const zipUrl = `http://localhost:8000/${cubeId}-eng.zip`
   logger.info(`Fetching object from ${zipUrl}`)
   const zipAsBuffer = await request(zipUrl, { encoding: null })
 
@@ -34,7 +33,7 @@ async function getFilesContentFromZipFile(
   zipfile: yauzl.ZipFile
 ): Promise<{ [key: string]: string }> {
   return new Promise(async (resolve, reject) => {
-    const fileReadingPromises: Promise<any>[] = []
+    const fileReadingPromises: Array<Promise<any>> = []
     const filesContent = {}
 
     // Called once per file in the zipfile
@@ -91,11 +90,11 @@ async function getZipfileFromBuffer(buffer: Buffer): Promise<yauzl.ZipFile> {
 async function getFullTableDownloadCSV(cubeId: string): Promise<string> {
   const url = `https://www150.statcan.gc.ca/t1/wds/rest/getFullTableDownloadCSV/${cubeId}/en`
 
-  interface Response {
+  interface IResponse {
     status: string
     object: string
   }
-  const response: Response = await fetch(url).then(response => response.json())
+  const response: IResponse = await fetch(url).then(response => response.json())
   const { status, object } = response
 
   if (status !== 'SUCCESS') {
