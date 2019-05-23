@@ -2,7 +2,8 @@ import React from 'react'
 import dayjs from 'dayjs'
 import Title from 'antd/lib/typography/title'
 import randomColor from 'randomcolor'
-import { Select, Divider } from 'antd'
+import { Divider } from 'antd'
+import DimensionSelect from '../components/dimension-select'
 import {
   LineChart,
   Line,
@@ -24,16 +25,6 @@ interface DataEntry {
   UOM: string
 }
 
-interface Dimension {
-  id: number
-  parentId: number
-  name: string
-}
-
-interface DimensionsDict {
-  [key: string]: Dimension[]
-}
-
 interface Props {
   data: DataEntry[]
   metadata: string
@@ -49,43 +40,7 @@ interface State {
   colors: string[]
 }
 
-const DimensionSelect = (options: {
-  dimensionsGroupName: string
-  dimensionsGroup: Dimension[]
-  onChange: any
-  defaultValue: string
-}) => {
-  const {
-    dimensionsGroup,
-    dimensionsGroupName,
-    onChange,
-    defaultValue,
-  } = options
-
-  return (
-    <Select
-      key={`select-option-${dimensionsGroupName}`}
-      defaultValue={defaultValue}
-      dropdownMatchSelectWidth={false}
-      onChange={onChange}
-    >
-      {dimensionsGroup.map(dimension => (
-        <Select.Option
-          key={`select-option-${dimension.name}-${dimension.id}`}
-          value={dimension.id}
-        >
-          {dimension.name}
-        </Select.Option>
-      ))}
-    </Select>
-  )
-}
-
-const CustomTooltip = (args: {
-  active: boolean
-  payload: any
-  label: string
-}) => {
+function CustomTooltip(args: { active: boolean; payload: any; label: string }) {
   const { active, payload, label } = args
 
   payload &&
@@ -149,7 +104,12 @@ export default class IndexPage extends React.Component<Props, State> {
     }
   }
 
-  processData(data: DataEntry[]) {
+  processData(
+    data: DataEntry[]
+  ): {
+    date: string
+    values: { [key: string]: number }
+  }[] {
     const processedData = []
     let current: any = null
 
