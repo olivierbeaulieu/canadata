@@ -81,6 +81,38 @@ const DimensionSelect = (options: {
   )
 }
 
+const CustomTooltip = (args: {
+  active: boolean
+  payload: any
+  label: string
+}) => {
+  const { active, payload, label } = args
+
+  payload &&
+    payload.sort((a, b) => {
+      return Number(b.value) - Number(a.value)
+    })
+
+  if (active) {
+    return (
+      <div className="graph-tooltip">
+        <Title level={4}>{label}</Title>
+        <>
+          {payload.map(entry => {
+            return (
+              <p>
+                {entry.name}: {formatNumbers(entry.value)}
+              </p>
+            )
+          })}
+        </>
+      </div>
+    )
+  }
+
+  return null
+}
+
 export default class IndexPage extends React.Component<Props, State> {
   props: Props
   state: State
@@ -123,7 +155,6 @@ export default class IndexPage extends React.Component<Props, State> {
 
     for (let entry of data) {
       if (!current || current.date !== entry.REF_DATE) {
-        // Create a new entry
         current = {
           date: entry.REF_DATE,
           values: {},
@@ -150,14 +181,12 @@ export default class IndexPage extends React.Component<Props, State> {
     const dimensions = {}
     const dimensionsById = []
 
-    // Initialize the dimensions
     metadata[1].forEach(entry => {
       const id = entry['Dimension ID']
       const name = entry['Dimension name']
       dimensions[name] = dimensionsById[id] = []
     })
 
-    // Populate the dimensions
     metadata[2].forEach(entry => {
       const id = entry['Dimension ID']
       dimensionsById[id].push({
@@ -171,7 +200,6 @@ export default class IndexPage extends React.Component<Props, State> {
   }
 
   render() {
-    // console.log(this.state)
     const { metadata, dimensions, dimensionFilters } = this.state
 
     const data = this.props.data.filter(entry => {
@@ -184,12 +212,6 @@ export default class IndexPage extends React.Component<Props, State> {
       })
 
       return match
-      // return (
-      //   entry['Units of measure'] ===
-      //     this.state.dimensionFilters['Units of measure'] &&
-      //   entry['Supply and disposition'] ===
-      //     this.state.dimensionFilters['Supply and disposition']
-      // )
     })
 
     const processedData = this.processData(data)
@@ -250,8 +272,8 @@ export default class IndexPage extends React.Component<Props, State> {
                 }
               }}
             />
-            <YAxis />
-            <Tooltip formatter={formatNumbers} />
+            <YAxis tickFormatter={formatNumbers} />
+            <Tooltip content={CustomTooltip} formatter={formatNumbers} />
             <Legend />
 
             {dimensions['Geography'].map((dimension, index) => {

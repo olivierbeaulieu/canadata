@@ -54,20 +54,20 @@ class MyApp extends App<Props> {
                   d="m-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27l332-652 332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z"
                 />
               </svg>
-              Graph eh?
+              Canadata
             </div>
             <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
               <Menu.Item key="1">
-                <Icon type="area-chart" />
-                <span className="nav-text">Foo</span>
+                <Icon type="line-chart" />
+                <span className="nav-text">Graphs</span>
               </Menu.Item>
               <Menu.Item key="2">
-                <Icon type="pie-chart" />
-                <span className="nav-text">Bar</span>
+                <Icon type="user" />
+                <span className="nav-text">Profile</span>
               </Menu.Item>
               <Menu.Item key="3">
-                <Icon type="radar-chart" />
-                <span className="nav-text">Baz</span>
+                <Icon type="search" />
+                <span className="nav-text">Search</span>
               </Menu.Item>
             </Menu>
           </Sider>
