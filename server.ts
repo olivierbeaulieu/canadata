@@ -40,7 +40,7 @@ app
           csvData = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
         }
 
-        const data = await csvToJson().fromString(csvData.data)
+        const rawDataPoints = await csvToJson().fromString(csvData.data)
         const metadata = await Promise.all(
           csvData.metadata
             .split('\n\n')
@@ -48,7 +48,7 @@ app
         )
 
         app.render(req, res, '/index', {
-          data,
+          rawDataPoints,
           metadata: JSON.stringify(metadata),
         })
       } catch (e) {

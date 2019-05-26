@@ -12,7 +12,7 @@ interface IRawDataPoint {
 }
 
 interface IProps {
-  data: IRawDataPoint[]
+  rawDataPoints: IRawDataPoint[]
   metadata: string
 }
 
@@ -28,10 +28,10 @@ interface IState {
 
 export default class IndexPage extends React.Component<IProps, IState> {
   private static getInitialProps({ query }: { query: IProps }) {
-    const { data, metadata } = query
+    const { rawDataPoints, metadata } = query
 
     return {
-      data,
+      rawDataPoints,
       metadata,
     }
   }
@@ -81,23 +81,26 @@ export default class IndexPage extends React.Component<IProps, IState> {
     }
   }
 
-  private processData(data: IRawDataPoint[]): IDataPoint[] {
-    const processedData = []
-    let current: any = null
+  private processRawDataPoints(rawDataPoints: IRawDataPoint[]): IDataPoint[] {
+    const dataPoints: IDataPoint[] = []
+    let currentDataPoint: IDataPoint = null
 
-    for (const entry of data) {
-      if (!current || current.date !== entry.REF_DATE) {
-        current = {
-          date: entry.REF_DATE,
+    for (const rawDataPoint of rawDataPoints) {
+      if (
+        !currentDataPoint ||
+        currentDataPoint.date !== rawDataPoint.REF_DATE
+      ) {
+        currentDataPoint = {
+          date: rawDataPoint.REF_DATE,
           values: {},
         }
-        processedData.push(current)
+        dataPoints.push(currentDataPoint)
       }
 
-      current.values[entry.GEO] = Number(entry.VALUE)
+      currentDataPoint.values[rawDataPoint.GEO] = Number(rawDataPoint.VALUE)
     }
 
-    return processedData
+    return dataPoints
   }
 
   private getTitleFromMetadata(metadata): string {
@@ -142,13 +145,15 @@ export default class IndexPage extends React.Component<IProps, IState> {
 
     console.log(this.state)
 
-    const data = this.props.data.filter(dataEntry => {
+    // Apply dimension filters to the raw data points
+    const data = this.props.rawDataPoints.filter(dataEntry => {
       const dimensionNames = Object.keys(dimensionFilters)
       let match = true
 
-      dimensionNames.forEach(dimensionName => {
+      for (const dimensionName of dimensionNames) {
         const filterValue = dimensionFilters[dimensionName]
 
+        // If the filter is an array, verify if the value is in the array
         if (Array.isArray(filterValue)) {
           let key = dimensionName
 
@@ -161,21 +166,25 @@ export default class IndexPage extends React.Component<IProps, IState> {
 
           if (filterValue.includes(dimensionValueId) === false) {
             match = false
+            break
           }
-        } else if (typeof filterValue === 'string') {
-          if (
-            dataEntry[dimensionName] !==
+
+          // If the filter is a string, verify if the value matches the string
+        } else if (
+          typeof filterValue === 'string' &&
+          dataEntry[dimensionName] !==
             dimensionsById[dimensionName][filterValue].name
-          ) {
-            match = false
-          }
+        ) {
+          match = false
+          break
         }
-      })
+      }
 
       return match
     })
 
-    const processedData = this.processData(data)
+    // Convert raw data points into formatted data points
+    const processedData = this.processRawDataPoints(data)
 
     return (
       <div>
