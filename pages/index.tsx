@@ -4,9 +4,6 @@ import { Divider } from 'antd'
 import DimensionSelect from '../components/dimension-select'
 import LineChart from '../components/line-chart'
 
-const formatNumbers = (value: number) =>
-  new Intl.NumberFormat('en').format(value)
-
 interface IDataEntry {
   GEO: string
   REF_DATE: string
@@ -63,8 +60,6 @@ export default class IndexPage extends React.Component<IProps, IState> {
       {}
     )
 
-    console.log('dimensionsById', dimensionsById)
-
     this.state = {
       metadata,
       dimensions,
@@ -82,25 +77,7 @@ export default class IndexPage extends React.Component<IProps, IState> {
       }, {}),
       frequency: this.getFrequencyFromMetadata(metadata),
     }
-
-    // this.getOnDimensionSelectChange = this.getOnDimensionSelectChange.bind(this)
   }
-
-  // private getOnDimensionSelectChange(
-  //   dimensions: IDimensionsDict,
-  //   dimensionName: string
-  // ): (dimensionId: string) => void {
-  //   return (dimensionId: string) => {
-  //     console.log('ondimensionschange', dimensionId)
-  //     this.setState((state, props) => ({
-  //       dimensionFilters: Object.assign({}, state.dimensionFilters, {
-  //         [dimensionName]: dimensions[dimensionName].find(
-  //           entry => entry.id === dimensionId
-  //         ).name,
-  //       }),
-  //     }))
-  //   }
-  // }
 
   private processData(data: IDataEntry[]): IDataPoint[] {
     const processedData = []
