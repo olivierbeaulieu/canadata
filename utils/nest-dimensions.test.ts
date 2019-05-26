@@ -1,4 +1,4 @@
-import nestDimensions from './nest-dimensions'
+import nestDimensionValues from './nest-dimensions'
 
 test('should properly convert a flat structure to a nested structure', () => {
   const dimensionsArray = [
@@ -28,7 +28,7 @@ test('should properly convert a flat structure to a nested structure', () => {
     },
   ]
 
-  const result = nestDimensions(dimensionsArray)
+  const result = nestDimensionValues(dimensionsArray)
 
   expect(result).toHaveLength(1)
   expect(result[0]).toHaveProperty('id', '1')
@@ -57,7 +57,7 @@ test('should not modifying the initial array', () => {
     },
   ]
 
-  nestDimensions(dimensionsArray)
+  nestDimensionValues(dimensionsArray)
 
   expect(dimensionsArray[0].children).toHaveLength(0)
 })

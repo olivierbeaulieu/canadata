@@ -4,7 +4,7 @@ import { Divider } from 'antd'
 import DimensionSelect from '../components/dimension-select'
 import LineChart from '../components/line-chart'
 
-interface IDataEntry {
+interface IRawDataPoint {
   GEO: string
   REF_DATE: string
   VALUE: string
@@ -12,7 +12,7 @@ interface IDataEntry {
 }
 
 interface IProps {
-  data: IDataEntry[]
+  data: IRawDataPoint[]
   metadata: string
 }
 
@@ -42,7 +42,7 @@ export default class IndexPage extends React.Component<IProps, IState> {
   constructor(props: IProps) {
     super(props)
 
-    const metadata = JSON.parse(props.metadata)
+    const metadata: Array<{}> = JSON.parse(props.metadata)
     const dimensions = this.getDimensionsFromMetadata(metadata)
 
     const dimensionsById = Object.keys(dimensions).reduce(
@@ -67,7 +67,9 @@ export default class IndexPage extends React.Component<IProps, IState> {
       dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionName) => {
         if (dimensionName === 'Geography') {
           // Multiselect
-          acc[dimensionName] = dimensions[dimensionName].map(entry => entry.id)
+          acc[dimensionName] = dimensions[dimensionName].map(
+            dimensionValue => dimensionValue.id
+          )
         } else {
           // Single select
           acc[dimensionName] = dimensions[dimensionName][0].id
@@ -79,7 +81,7 @@ export default class IndexPage extends React.Component<IProps, IState> {
     }
   }
 
-  private processData(data: IDataEntry[]): IDataPoint[] {
+  private processData(data: IRawDataPoint[]): IDataPoint[] {
     const processedData = []
     let current: any = null
 
@@ -140,7 +142,7 @@ export default class IndexPage extends React.Component<IProps, IState> {
 
     console.log(this.state)
 
-    const data = this.props.data.filter(entry => {
+    const data = this.props.data.filter(dataEntry => {
       const dimensionNames = Object.keys(dimensionFilters)
       let match = true
 
@@ -152,15 +154,17 @@ export default class IndexPage extends React.Component<IProps, IState> {
 
           // Patch for the weird case where the dimension is Geography, but the field in the data is GEO
           if (dimensionName === 'Geography') key = 'GEO'
-          const id = dimensions[dimensionName].find(x => x.name === entry[key])
-            .id
 
-          if (filterValue.includes(id) === false) {
+          const dimensionValueId = dimensions[dimensionName].find(
+            dimensionValue => dimensionValue.name === dataEntry[key]
+          ).id
+
+          if (filterValue.includes(dimensionValueId) === false) {
             match = false
           }
         } else if (typeof filterValue === 'string') {
           if (
-            entry[dimensionName] !==
+            dataEntry[dimensionName] !==
             dimensionsById[dimensionName][filterValue].name
           ) {
             match = false
@@ -183,9 +187,9 @@ export default class IndexPage extends React.Component<IProps, IState> {
           const select = (
             <DimensionSelect
               multiple={isMultiple}
-              value={dimensionFilters[filterName] as string}
-              dimensionsGroupName={filterName}
-              dimensionsGroup={dimensions[filterName]}
+              value={dimensionFilters[filterName]}
+              dimensionName={filterName}
+              dimensionValues={dimensions[filterName]}
               onChange={value => {
                 this.setState(state => {
                   return {

@@ -1,18 +1,26 @@
 import { cloneDeep } from 'lodash'
 
-export default function nestDimensions(dimensions: IDimension[]): IDimension[] {
+/**
+ * Takes an array of IDimensionValues and nests them into their
+ * children property, based on the parentId value they have.
+ */
+export default function nestDimensionValues(
+  dimensionValues: IDimensionValue[]
+): IDimensionValue[] {
   const output = []
-  const dimensionsMapById = {}
+  const mapById = {} // Hashtable used to retrieve dimensionValues more efficiently
 
-  dimensions.forEach(dimension => {
-    const dimensionCopy = cloneDeep(dimension)
-    dimensionsMapById[dimension.id] = dimensionCopy
+  dimensionValues.forEach(dimensionValue => {
+    const dimensionValueCopy = cloneDeep(dimensionValue)
+    const { id, parentId } = dimensionValueCopy
 
-    // '', false or 0, intentional
-    if (!dimension.parentId) {
-      output.push(dimensionCopy)
+    mapById[id] = dimensionValueCopy
+
+    // parentId can be '', false or 0, this is intentional
+    if (!parentId) {
+      output.push(dimensionValueCopy)
     } else {
-      dimensionsMapById[dimension.parentId].children.push(dimensionCopy)
+      mapById[parentId].children.push(dimensionValueCopy)
     }
   })
 

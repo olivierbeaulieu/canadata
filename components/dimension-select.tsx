@@ -1,34 +1,34 @@
 import React from 'react'
 import { TreeSelect } from 'antd'
-import nestDimensions from '../utils/nest-dimensions'
+import nestDimensionValues from '../utils/nest-dimensions'
 import slugify from 'underscore.string/slugify'
 
 export default function DimensionSelect(options: {
-  dimensionsGroupName: string
-  dimensionsGroup: IDimension[]
+  dimensionName: string
+  dimensionValues: IDimensionValue[]
   onChange: any
-  value: string
+  value: string | string[]
   multiple?: boolean
 }) {
-  const {
-    dimensionsGroup,
-    dimensionsGroupName,
-    onChange,
-    value,
-    multiple,
-  } = options
+  const { dimensionValues, dimensionName, onChange, value, multiple } = options
 
-  const nestedDimensions = nestDimensions(dimensionsGroup)
+  const nestedDimensionValues = nestDimensionValues(dimensionValues)
 
-  const getRecursiveTreeNode = ({ dimension }: { dimension: IDimension }) => {
+  const getRecursiveTreeNode = ({
+    dimensionValue,
+  }: {
+    dimensionValue: IDimensionValue
+  }) => {
+    const { id, name, children } = dimensionValue
+
     return (
       <TreeSelect.TreeNode
-        key={`select-option-${slugify(dimension.name)}-${dimension.id}`}
-        value={dimension.id}
-        title={dimension.name}
+        key={`select-option-${slugify(name)}-${id}`}
+        value={id}
+        title={name}
       >
-        {dimension.children.map(childDimension => {
-          return getRecursiveTreeNode({ dimension: childDimension })
+        {children.map(childDimensionValue => {
+          return getRecursiveTreeNode({ dimensionValue: childDimensionValue })
         })}
       </TreeSelect.TreeNode>
     )
@@ -36,14 +36,16 @@ export default function DimensionSelect(options: {
 
   return (
     <TreeSelect
-      key={`select-option-${dimensionsGroupName}`}
+      key={`select-option-${dimensionName}`}
       value={value}
       multiple={multiple}
       treeDefaultExpandAll={true}
       dropdownMatchSelectWidth={false}
       onChange={onChange}
     >
-      {nestedDimensions.map(dimension => getRecursiveTreeNode({ dimension }))}
+      {nestedDimensionValues.map(dimension =>
+        getRecursiveTreeNode({ dimensionValue: dimension })
+      )}
     </TreeSelect>
   )
 }

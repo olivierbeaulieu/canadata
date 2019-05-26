@@ -1,16 +1,16 @@
-interface IDimension {
+interface IDimensionValue {
   id: string
   parentId: string
   name: string
-  children: IDimension[]
+  children: IDimensionValue[]
 }
 
 interface IDimensionsDict {
-  [key: string]: IDimension[]
+  [key: string]: IDimensionValue[]
 }
 
 interface IDimensionsByIdDict {
-  [key: string]: { [key: string]: IDimension }
+  [key: string]: { [key: string]: IDimensionValue }
 }
 
 interface IDataPoint {
