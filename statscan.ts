@@ -8,8 +8,9 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 export async function getCubeDataAsCsv(
   cubeId: string
 ): Promise<{ data: string; metadata: string }> {
-  // const zipUrl = await getFullTableDownloadCSV(cubeId)
-  const zipUrl = `http://localhost:8000/${cubeId}-eng.zip`
+  const zipUrl = await getFullTableDownloadCSV(cubeId)
+  // const zipUrl = `http://localhost:8000/${cubeId}-eng.zip`
+
   logger.info(`Fetching object from ${zipUrl}`)
   const zipAsBuffer = await request(zipUrl, { encoding: null })
 

@@ -8,8 +8,15 @@ export default function DimensionSelect(options: {
   dimensionsGroup: IDimension[]
   onChange: any
   value: string
+  multiple?: boolean
 }) {
-  const { dimensionsGroup, dimensionsGroupName, onChange, value } = options
+  const {
+    dimensionsGroup,
+    dimensionsGroupName,
+    onChange,
+    value,
+    multiple,
+  } = options
 
   const nestedDimensions = nestDimensions(dimensionsGroup)
 
@@ -31,6 +38,7 @@ export default function DimensionSelect(options: {
     <TreeSelect
       key={`select-option-${dimensionsGroupName}`}
       value={value}
+      multiple={multiple}
       treeDefaultExpandAll={true}
       dropdownMatchSelectWidth={false}
       onChange={onChange}

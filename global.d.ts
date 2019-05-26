@@ -8,3 +8,12 @@ interface IDimension {
 interface IDimensionsDict {
   [key: string]: IDimension[]
 }
+
+interface IDimensionsByIdDict {
+  [key: string]: { [key: string]: IDimension }
+}
+
+interface IDataPoint {
+  date: string
+  values: { [key: string]: number }
+}
