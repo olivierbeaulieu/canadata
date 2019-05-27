@@ -3,14 +3,14 @@ import { TreeSelect } from 'antd'
 import nestDimensionValues from '../utils/nest-dimensions'
 import slugify from 'underscore.string/slugify'
 
-export default function DimensionSelect(options: {
+export default function DimensionSelect(props: {
   dimensionName: string
   dimensionValues: IDimensionValue[]
   onChange: any
   value: string | string[]
   multiple?: boolean
 }) {
-  const { dimensionValues, dimensionName, onChange, value, multiple } = options
+  const { dimensionValues, dimensionName, onChange, value, multiple } = props
 
   const nestedDimensionValues = nestDimensionValues(dimensionValues)
 

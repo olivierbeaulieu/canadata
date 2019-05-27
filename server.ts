@@ -16,6 +16,11 @@ process.on('unhandledRejection', event => {
   logger.error(event)
 })
 
+// A valid cube ID is a 8-numbers long string
+function isValidCubeId(cubeId: string) {
+  return /[0-9]{8}/.test(cubeId)
+}
+
 app
   .prepare()
   .then(async () => {
@@ -28,9 +33,17 @@ app
     // 	next();
     // });
 
-    server.get('/', async (req, res) => {
+    server.get('/api/cube/:cubeId', async (req, res) => {
       // const cubeId = '36100450' // Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
-      const cubeId = '25100063' // Supply and disposition of crude oil and equivalent1
+      // const cubeId = '25100063' // Supply and disposition of crude oil and equivalent1
+      const { cubeId } = req.params
+
+      // The cubeId should be
+      if (isValidCubeId(cubeId) === false) {
+        res.status(400).send('Invalid cubeId')
+        return
+      }
+
       let csvData
 
       try {
@@ -47,15 +60,27 @@ app
             .map(async cube => csvToJson().fromString(cube))
         )
 
-        app.render(req, res, '/index', {
+        res.json({
           rawDataPoints,
-          metadata: JSON.stringify(metadata),
+          metadata,
         })
       } catch (e) {
         logger.error(e)
-
-        app.render(req, res, '/graph-loading-error')
+        res.send(500)
       }
+    })
+
+    server.get('/chart/:cubeId', async (req, res) => {
+      const { cubeId } = req.params
+
+      if (isValidCubeId(cubeId) === false) {
+        res.status(400).send('Invalid cubeId')
+        return
+      }
+
+      app.render(req, res, '/index', {
+        cubeId,
+      })
     })
 
     server.get('*', (req, res) => {
@@ -71,3 +96,6 @@ app
     logger.error(ex.stack)
     process.exit(1)
   })
+
+// 36100450 Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
+// 25100063 // Supply and disposition of crude oil and equivalent1

@@ -91,13 +91,13 @@ export default function Graph({
         <Tooltip content={CustomTooltip} formatter={formatNumbers} />
         <Legend />
 
-        {dimensions.Geography.map((dimension, index) => (
+        {dimensions.Geography.map((dimensionValue, index) => (
           <Line
             type="natural"
             strokeWidth={2}
-            key={`line-${dimension.name}`}
-            dataKey={getLineDataKey(dimension.name)}
-            name={dimension.name}
+            key={`line-${dimensionValue.name}`}
+            dataKey={getLineDataKey(dimensionValue.name)}
+            name={dimensionValue.name}
             stroke={colors[index] || '#82ca9d'}
           />
         ))}
