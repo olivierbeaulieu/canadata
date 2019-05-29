@@ -20,7 +20,13 @@ export default class IndexPage extends React.Component<IProps> {
     return (
       <CubeDataLoader
         cubeId={this.props.cubeId}
-        render={({ isLoading, isLoadingDone, rawDataPoints, metadata }) => {
+        render={(props: {
+          isLoading: boolean
+          isLoadingDone: boolean
+          rawDataPoints: IRawDataPoint[]
+          metadata: ICubeMetadata
+        }) => {
+          const { isLoading, isLoadingDone, rawDataPoints, metadata } = props
           return (
             <div>
               {isLoadingDone ? (

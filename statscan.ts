@@ -13,7 +13,7 @@ export async function getCubeMetadata(cubeId: string) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify([{ productId: 35100003 }]),
+      body: JSON.stringify([{ productId: Number(cubeId) }]),
     }
   )
     .then(response => response.json())

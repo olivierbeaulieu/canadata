@@ -4,28 +4,27 @@ import nestDimensionValues from '../utils/nest-dimensions'
 import slugify from 'underscore.string/slugify'
 
 export default function DimensionSelect(props: {
-  dimensionName: string
-  dimensionValues: IDimensionValue[]
+  dimension: IDimension
   onChange: any
-  value: string | string[]
+  value: number | number[]
   multiple?: boolean
 }) {
-  const { dimensionValues, dimensionName, onChange, value, multiple } = props
+  const { dimension, onChange, value, multiple } = props
 
-  const nestedDimensionValues = nestDimensionValues(dimensionValues)
+  const nestedDimensionValues = nestDimensionValues(dimension.member)
 
   const getRecursiveTreeNode = ({
     dimensionValue,
   }: {
-    dimensionValue: IDimensionValue
+    dimensionValue: IDimensionMember
   }) => {
-    const { id, name, children } = dimensionValue
+    const { memberId, memberNameEn, children } = dimensionValue
 
     return (
       <TreeSelect.TreeNode
-        key={`select-option-${slugify(name)}-${id}`}
-        value={id}
-        title={name}
+        key={`select-option-${slugify(memberNameEn)}-${memberId}`}
+        value={memberId}
+        title={memberNameEn}
       >
         {children.map(childDimensionValue => {
           return getRecursiveTreeNode({ dimensionValue: childDimensionValue })
@@ -36,7 +35,7 @@ export default function DimensionSelect(props: {
 
   return (
     <TreeSelect
-      key={`select-option-${dimensionName}`}
+      key={`select-option-${dimension.dimensionNameEn}`}
       value={value}
       multiple={multiple}
       treeDefaultExpandAll={true}

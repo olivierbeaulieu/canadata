@@ -86,15 +86,13 @@ const colors = randomColor({
   luminosity: 'dark',
 })
 
-export default function Graph({
-  data,
-  dimensions,
-  frequencyCode,
-}: {
+export default function Graph(props: {
   data: IDataPoint[]
   dimensions: IDimensionsDict
   frequencyCode: number
 }): React.ReactElement {
+  const { data, dimensions, frequencyCode } = props
+
   return (
     <ResponsiveContainer width="100%" height={600}>
       <LineChart
@@ -112,13 +110,13 @@ export default function Graph({
         <Tooltip content={CustomTooltip} formatter={formatNumbers} />
         <Legend />
 
-        {dimensions.Geography.map((dimensionValue, index) => (
+        {dimensions[1].member.map((dimensionValue, index) => (
           <Line
             type="natural"
             strokeWidth={2}
-            key={`line-${dimensionValue.name}`}
-            dataKey={getLineDataKey(dimensionValue.name)}
-            name={dimensionValue.name}
+            key={`line-${dimensionValue.memberNameEn}`}
+            dataKey={getLineDataKey(dimensionValue.memberNameEn)}
+            name={dimensionValue.memberNameEn}
             stroke={colors[index] || '#82ca9d'}
           />
         ))}

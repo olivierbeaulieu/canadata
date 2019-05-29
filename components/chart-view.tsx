@@ -3,26 +3,21 @@ import Title from 'antd/lib/typography/title'
 import { Divider } from 'antd'
 import DimensionSelect from '../components/dimension-select'
 import LineChart from '../components/line-chart'
-
-interface IRawDataPoint {
-  GEO: string
-  REF_DATE: string
-  VALUE: string
-  UOM: string
-}
+import { cloneDeep } from 'lodash'
 
 interface IProps {
   rawDataPoints: IRawDataPoint[]
   metadata: ICubeMetadata
 }
 
+interface IDimensionFilters {
+  [key: number]: number | number[]
+}
+
 interface IState {
   metadata: ICubeMetadata
   dimensions: IDimensionsDict
-  dimensionsById: IDimensionsByIdDict
-  dimensionFilters: {
-    [key: string]: string | string[]
-  }
+  dimensionFilters: IDimensionFilters
 }
 
 export default class ChartView extends React.Component<IProps, IState> {
@@ -32,34 +27,21 @@ export default class ChartView extends React.Component<IProps, IState> {
     const { metadata } = props
     const dimensions = this.getDimensionsFromMetadata(metadata)
 
-    const dimensionsById = Object.keys(dimensions).reduce(
-      (acc, dimensionName) => {
-        acc[dimensionName] = dimensions[dimensionName].reduce(
-          (acc, dimension) => {
-            acc[dimension.id] = dimension
-            return acc
-          },
-          {}
-        )
-
-        return acc
-      },
-      {}
-    )
-
     this.state = {
       metadata,
       dimensions,
-      dimensionsById,
-      dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionName) => {
+      dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionId) => {
+        const dimension: IDimension = dimensions[dimensionId]
+        const dimensionName = dimension.dimensionNameEn
+
         if (dimensionName === 'Geography') {
-          // Multiselect
-          acc[dimensionName] = dimensions[dimensionName].map(
-            dimensionValue => dimensionValue.id
+          // If multiselect, return an array containing the ids of all members
+          acc[dimension.dimensionPositionId] = dimension.member.map(
+            dimensionMember => dimensionMember.memberId
           )
         } else {
-          // Single select
-          acc[dimensionName] = dimensions[dimensionName][0].id
+          // If single select, return the id of the first mbmer
+          acc[dimension.dimensionPositionId] = dimension.member[0].memberId
         }
 
         return acc
@@ -89,86 +71,75 @@ export default class ChartView extends React.Component<IProps, IState> {
     return dataPoints
   }
 
-  private getDimensionsFromMetadata(metadata): IDimensionsDict {
-    const dimensions = {}
-    const dimensionsById = []
+  /**
+   * Returns an object where the key is the dimension position ID
+   */
+  private getDimensionsFromMetadata(metadata: ICubeMetadata): IDimensionsDict {
+    return metadata.dimension.reduce((acc, dimension) => {
+      const clonedDimension = cloneDeep(dimension)
 
-    metadata.dimension.forEach(dimension => {
-      // todo make bilingual
-      dimensions[dimension.dimensionNameEn] = dimension.member.map(
-        dimensionMember => {
-          return {
-            name: dimensionMember.memberNameEn,
-            id: dimensionMember.memberId,
-            parentId: dimensionMember.parentMemberId,
-            children: [],
-          }
-        }
-      )
-    })
+      // Ensure all dimension members have a children array
+      clonedDimension.member.forEach(dimensionMember => {
+        const member = dimensionMember as IDimensionMember
+        member.children = []
+      })
 
-    return dimensions
+      acc[dimension.dimensionPositionId] = clonedDimension
+
+      return acc
+    }, {})
   }
 
-  public render(): React.ReactNode {
-    const {
-      metadata,
-      dimensions,
-      dimensionsById,
-      dimensionFilters,
-    } = this.state
-
-    console.log(this.state)
-
-    // Apply dimension filters to the raw data points
-    const data = this.props.rawDataPoints.filter(dataEntry => {
-      return true
-      const dimensionNames = Object.keys(dimensionFilters)
+  private applyFilters(
+    rawDataPoints: IRawDataPoint[],
+    dimensionFilters: IDimensionFilters
+  ): IRawDataPoint[] {
+    return rawDataPoints.filter(dataPoint => {
+      // console.log(dataPoint.coords)
       let match = true
 
-      for (const dimensionName of dimensionNames) {
-        const filterValue = dimensionFilters[dimensionName]
-
-        // If the filter is an array, verify if the value is in the array
-        if (Array.isArray(filterValue)) {
-          let key = dimensionName
-
-          // Patch for the weird case where the dimension is Geography, but the field in the data is GEO
-          if (dimensionName === 'Geography') key = 'GEO'
-
-          // Find the dimension value id that matches this name
-          const dimensionValue = dimensions[dimensionName].find(
-            dimensionValue => dimensionValue.name === dataEntry[key]
-          )
-
-          if (!dimensionValue) {
-            console.error(
-              `could not find a value for ${dimensionName} and name ${
-                dataEntry[key]
-              }`
-            )
-            console.log(dimensions)
-            return
-          }
-
-          if (filterValue.includes(dimensionValueId.id) === false) {
+      for (const id of Object.keys(dimensionFilters)) {
+        const dimensionFilterId = Number(id)
+        const dimensionFilterValue = dimensionFilters[dimensionFilterId]
+        // console.log(
+        //   'dimensionFilterId',
+        //   dimensionFilterId,
+        //   typeof dimensionFilterId
+        // )
+        if (Array.isArray(dimensionFilterValue)) {
+          if (
+            dimensionFilterValue.includes(
+              dataPoint.coords[Number(dimensionFilterId) - 1]
+            ) === false
+          ) {
             match = false
             break
           }
+        } else if (typeof dimensionFilterId === 'number') {
+          const dimensionFilterValue = dimensionFilters[dimensionFilterId]
 
-          // If the filter is a string, verify if the value matches the string
-        } else if (
-          typeof filterValue === 'string' &&
-          dataEntry[dimensionName] !==
-            dimensionsById[dimensionName][filterValue].name
-        ) {
-          match = false
-          break
+          if (
+            dimensionFilterValue !==
+            dataPoint.coords[Number(dimensionFilterId) - 1]
+          ) {
+            match = false
+            break
+          }
         }
       }
 
       return match
     })
+  }
+
+  public render(): React.ReactNode {
+    const { rawDataPoints } = this.props
+    const { dimensions, dimensionFilters } = this.state
+
+    console.log(this.state)
+
+    // Apply dimension filters to the raw data points
+    const data = this.applyFilters(rawDataPoints, dimensionFilters)
 
     // Convert raw data points into formatted data points
     const processedData = this.processRawDataPoints(data)
@@ -178,14 +149,14 @@ export default class ChartView extends React.Component<IProps, IState> {
         <Title level={2}>{this.state.metadata.cubeTitleEn}</Title>
         <Divider />
 
-        {Object.keys(dimensionFilters).map(filterName => {
-          const isMultiple = Array.isArray(dimensionFilters[filterName])
+        {Object.keys(dimensionFilters).map(dimensionId => {
+          const isMultiple = Array.isArray(dimensionFilters[dimensionId])
+
           const select = (
             <DimensionSelect
               multiple={isMultiple}
-              value={dimensionFilters[filterName]}
-              dimensionName={filterName}
-              dimensionValues={dimensions[filterName]}
+              value={dimensionFilters[dimensionId]}
+              dimension={dimensions[dimensionId]}
               onChange={value => {
                 this.setState(state => {
                   return {
@@ -193,7 +164,7 @@ export default class ChartView extends React.Component<IProps, IState> {
                       {},
                       state.dimensionFilters,
                       {
-                        [filterName]: value,
+                        [dimensionId]: value,
                       }
                     ),
                   }
@@ -203,8 +174,8 @@ export default class ChartView extends React.Component<IProps, IState> {
           )
 
           return (
-            <React.Fragment key={`dimension-filter-group-${filterName}`}>
-              <Title level={4}>{filterName}</Title>
+            <React.Fragment key={`dimension-filter-group-${dimensionId}`}>
+              <Title level={4}>{dimensions[dimensionId].dimensionNameEn}</Title>
               {select}
               <Divider />
             </React.Fragment>

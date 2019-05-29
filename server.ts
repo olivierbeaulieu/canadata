@@ -100,4 +100,4 @@ app
   })
 
 // 36100450 Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
-// 25100063 // Supply and disposition of crude oil and equivalent1
+// 25100063 // Supply and disposition of crude oil and equivalent

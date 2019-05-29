@@ -1,16 +1,31 @@
-interface IDimensionValue {
-  id: number
-  parentId: number
-  name: string
-  children: IDimensionValue[]
+interface IDimension {
+  dimensionNameEn: string
+  dimensionNameFr: string
+  dimensionPositionId: number
+  hasUom: boolean
+  member: IDimensionMember[]
+}
+
+interface IDimensionMember {
+  classificationCode?: string
+  classificationTypeCode?: string
+  geoLevel?: number
+  memberId: number
+  memberNameEn: string
+  memberNameFr?: string
+  memberUomCode?: number
+  parentMemberId: number
+  terminated?: number
+  vintage?: number
+  children: IDimensionMember[]
 }
 
 interface IDimensionsDict {
-  [key: string]: IDimensionValue[]
+  [key: number]: IDimension
 }
 
 interface IDimensionsByIdDict {
-  [key: string]: { [key: string]: IDimensionValue }
+  [key: string]: { [key: string]: IDimensionMember }
 }
 
 interface IDataPoint {
@@ -64,4 +79,12 @@ interface ICubeMetadata {
   responseStatusCode: number
   subjectCode: string[]
   surveyCode: string[]
+}
+
+interface IRawDataPoint {
+  GEO: string
+  REF_DATE: string
+  VALUE: string
+  UOM: string
+  coords: number[]
 }
