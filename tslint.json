@@ -57,7 +57,8 @@
     "ordered-imports": false,
     "object-literal-sort-keys": false,
     "eofline": false,
-    "max-classes-per-file": false
+    "max-classes-per-file": false,
+    "one-variable-per-declaration": false
   },
   "rulesDirectory": []
 }

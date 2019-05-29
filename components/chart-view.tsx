@@ -67,7 +67,7 @@ export default function Graph(props: {
   dimensions: IDimensionsDict
   frequencyCode: number
   uomId: number
-  type: 'area' | 'line'
+  type: IChartType
 }): React.ReactElement {
   const { type, data, dimensions, frequencyCode, uomId } = props
   const uom = getUomById(uomId)

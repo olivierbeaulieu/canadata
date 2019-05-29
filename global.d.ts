@@ -89,3 +89,5 @@ interface IRawDataPoint {
   UOM_ID: string
   coords: number[]
 }
+
+type IChartType = 'area' | 'line'

@@ -1,9 +1,9 @@
 import React from 'react'
 import Title from 'antd/lib/typography/title'
-import { Divider } from 'antd'
 import DimensionSelect from './dimension-select'
 import AreaChart from './chart-view'
 import { cloneDeep } from 'lodash'
+import { Radio, Icon, Divider } from 'antd'
 
 interface IProps {
   rawDataPoints: IRawDataPoint[]
@@ -18,6 +18,7 @@ interface IState {
   metadata: ICubeMetadata
   dimensions: IDimensionsDict
   dimensionFilters: IDimensionFilters
+  chartType: string
 }
 
 export default class ChartView extends React.Component<IProps, IState> {
@@ -30,6 +31,7 @@ export default class ChartView extends React.Component<IProps, IState> {
     this.state = {
       metadata,
       dimensions,
+      chartType: 'line',
       dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionId) => {
         const dimension: IDimension = dimensions[dimensionId]
         const dimensionName = dimension.dimensionNameEn
@@ -165,7 +167,7 @@ export default class ChartView extends React.Component<IProps, IState> {
 
   public render(): React.ReactNode {
     const { rawDataPoints } = this.props
-    const { dimensions, dimensionFilters } = this.state
+    const { chartType, dimensions, dimensionFilters } = this.state
     const uomId = Number(rawDataPoints[0].UOM_ID)
 
     console.log({
@@ -186,11 +188,32 @@ export default class ChartView extends React.Component<IProps, IState> {
 
         {this.getDimensionFilters()}
 
+        <Title level={4}>Chart Type</Title>
+        <Radio.Group
+          value={chartType}
+          onChange={event => {
+            this.setState({
+              chartType: event.target.value,
+            })
+          }}
+        >
+          <Radio.Button value="line">
+            <Icon type="line-chart" />
+            &nbsp;Line
+          </Radio.Button>
+          <Radio.Button value="area">
+            <Icon type="area-chart" />
+            &nbsp;Area
+          </Radio.Button>
+        </Radio.Group>
+
+        <Divider />
+
         <AreaChart
           data={processedData}
           dimensions={dimensions}
           uomId={uomId}
-          type="area"
+          type={chartType}
           frequencyCode={this.state.metadata.frequencyCode}
         />
       </div>
