@@ -1,4 +1,4 @@
-# 🇨🇦 Canadata
+# Canadata 🇨🇦
 
 Canadata is an application that allows you to visualize data from Statistics Canada.
 
