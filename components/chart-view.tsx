@@ -13,14 +13,13 @@ interface IRawDataPoint {
 
 interface IProps {
   rawDataPoints: IRawDataPoint[]
-  metadata: Array<{}>
+  metadata: ICubeMetadata
 }
 
 interface IState {
-  metadata: Array<{}>
+  metadata: ICubeMetadata
   dimensions: IDimensionsDict
   dimensionsById: IDimensionsByIdDict
-  frequency: string
   dimensionFilters: {
     [key: string]: string | string[]
   }
@@ -65,7 +64,6 @@ export default class ChartView extends React.Component<IProps, IState> {
 
         return acc
       }, {}),
-      frequency: this.getFrequencyFromMetadata(metadata),
     }
   }
 
@@ -91,33 +89,22 @@ export default class ChartView extends React.Component<IProps, IState> {
     return dataPoints
   }
 
-  private getTitleFromMetadata(metadata): string {
-    return metadata[0][0]['Cube Title']
-  }
-  private getProductIdFromMetadata(metadata): string {
-    return metadata[0][0]['Product Id']
-  }
-  private getFrequencyFromMetadata(metadata): string {
-    return metadata[0][0].Frequency
-  }
   private getDimensionsFromMetadata(metadata): IDimensionsDict {
     const dimensions = {}
     const dimensionsById = []
 
-    metadata[1].forEach(entry => {
-      const id = entry['Dimension ID']
-      const name = entry['Dimension name']
-      dimensions[name] = dimensionsById[id] = []
-    })
-
-    metadata[2].forEach(entry => {
-      const id = entry['Dimension ID']
-      dimensionsById[id].push({
-        name: entry['Member Name'],
-        id: entry['Member ID'],
-        parentId: entry['Parent Member ID'],
-        children: [],
-      })
+    metadata.dimension.forEach(dimension => {
+      // todo make bilingual
+      dimensions[dimension.dimensionNameEn] = dimension.member.map(
+        dimensionMember => {
+          return {
+            name: dimensionMember.memberNameEn,
+            id: dimensionMember.memberId,
+            parentId: dimensionMember.parentMemberId,
+            children: [],
+          }
+        }
+      )
     })
 
     return dimensions
@@ -131,8 +118,11 @@ export default class ChartView extends React.Component<IProps, IState> {
       dimensionFilters,
     } = this.state
 
+    console.log(this.state)
+
     // Apply dimension filters to the raw data points
     const data = this.props.rawDataPoints.filter(dataEntry => {
+      return true
       const dimensionNames = Object.keys(dimensionFilters)
       let match = true
 
@@ -146,11 +136,22 @@ export default class ChartView extends React.Component<IProps, IState> {
           // Patch for the weird case where the dimension is Geography, but the field in the data is GEO
           if (dimensionName === 'Geography') key = 'GEO'
 
-          const dimensionValueId = dimensions[dimensionName].find(
+          // Find the dimension value id that matches this name
+          const dimensionValue = dimensions[dimensionName].find(
             dimensionValue => dimensionValue.name === dataEntry[key]
-          ).id
+          )
 
-          if (filterValue.includes(dimensionValueId) === false) {
+          if (!dimensionValue) {
+            console.error(
+              `could not find a value for ${dimensionName} and name ${
+                dataEntry[key]
+              }`
+            )
+            console.log(dimensions)
+            return
+          }
+
+          if (filterValue.includes(dimensionValueId.id) === false) {
             match = false
             break
           }
@@ -174,7 +175,7 @@ export default class ChartView extends React.Component<IProps, IState> {
 
     return (
       <div>
-        <Title level={2}>{this.getTitleFromMetadata(metadata)}</Title>
+        <Title level={2}>{this.state.metadata.cubeTitleEn}</Title>
         <Divider />
 
         {Object.keys(dimensionFilters).map(filterName => {
@@ -213,7 +214,7 @@ export default class ChartView extends React.Component<IProps, IState> {
         <LineChart
           data={processedData}
           dimensions={dimensions}
-          frequency={this.state.frequency}
+          frequencyCode={this.state.metadata.frequencyCode}
         />
 
         {/* <pre>{JSON.stringify(this.state.metadata, null, 4)}</pre> */}

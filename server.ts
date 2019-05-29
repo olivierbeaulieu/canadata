@@ -1,7 +1,7 @@
 import express from 'express'
 import next from 'next'
 import pino from 'pino'
-import { getCubeDataAsCsv } from './statscan'
+import { getCubeDataAsCsv, getCubeMetadata } from './statscan'
 import csvToJson from 'csvtojson'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -46,6 +46,8 @@ app
 
       let csvData
 
+      const newMetadata = await getCubeMetadata(cubeId)
+
       try {
         if (cubeCache[cubeId]) {
           csvData = cubeCache[cubeId]
@@ -62,7 +64,7 @@ app
 
         res.json({
           rawDataPoints,
-          metadata,
+          metadata: newMetadata,
         })
       } catch (e) {
         logger.error(e)

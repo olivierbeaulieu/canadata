@@ -5,6 +5,27 @@ import yauzl from 'yauzl'
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 
+export async function getCubeMetadata(cubeId: string) {
+  const response = await fetch(
+    'https://www150.statcan.gc.ca/t1/wds/rest/getCubeMetadata',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify([{ productId: 35100003 }]),
+    }
+  )
+    .then(response => response.json())
+    .then(response => response[0])
+
+  if (response.status !== 'SUCCESS') {
+    throw new Error(`Failed to fetch metadata for productId ${cubeId}`)
+  }
+
+  return response.object
+}
+
 export async function getCubeDataAsCsv(
   cubeId: string
 ): Promise<{ data: string; metadata: string }> {

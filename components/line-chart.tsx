@@ -48,14 +48,35 @@ function getLineDataKey(dimensionName: string) {
   }
 }
 
-function getXAxisDataKey(frequency: string, entry: IDataPoint): string {
+function getXAxisDataKey(frequencyCode: number, entry: IDataPoint): string {
   const date = dayjs(entry.date)
-
-  switch (frequency) {
-    case 'Annual':
+  /*
+   * List of all possible frequency codes:
+   * 1: Daily
+   * 11: Semi-annual
+   * 12: Annual
+   * 13: Every 2 years
+   * 14: Every 3 years
+   * 15: Every 4 years
+   * 16: Every 5 years
+   * 17: Every 10 years
+   * 18: Occasional
+   * 19: Occasional Quarterly
+   * 2: Weekly
+   * 20: Occasional Monthly
+   * 21: Occasional Daily
+   * 4: Biweekly
+   * 6: Monthly
+   * 7: Bimonthly
+   * 9: Quarterly
+   */
+  switch (frequencyCode) {
+    // Annually
+    case 12:
       return date.format('YYYY')
 
     default:
+      // console.log('frequencyCode', frequencyCode)
       return date.format("MMM 'YY")
   }
 }
@@ -68,11 +89,11 @@ const colors = randomColor({
 export default function Graph({
   data,
   dimensions,
-  frequency,
+  frequencyCode,
 }: {
   data: IDataPoint[]
   dimensions: IDimensionsDict
-  frequency: string
+  frequencyCode: number
 }): React.ReactElement {
   return (
     <ResponsiveContainer width="100%" height={600}>
@@ -86,7 +107,7 @@ export default function Graph({
         }}
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={getXAxisDataKey.bind(null, frequency)} />
+        <XAxis dataKey={getXAxisDataKey.bind(null, frequencyCode)} />
         <YAxis tickFormatter={formatNumbers} />
         <Tooltip content={CustomTooltip} formatter={formatNumbers} />
         <Legend />

@@ -8,19 +8,23 @@ export default function nestDimensionValues(
   dimensionValues: IDimensionValue[]
 ): IDimensionValue[] {
   const output = []
-  const mapById = {} // Hashtable used to retrieve dimensionValues more efficiently
+  const mapById = []
 
-  dimensionValues.forEach(dimensionValue => {
-    const dimensionValueCopy = cloneDeep(dimensionValue)
-    const { id, parentId } = dimensionValueCopy
+  const clonedDimensionValues = cloneDeep(dimensionValues)
 
-    mapById[id] = dimensionValueCopy
+  // Create a flat structure based on the values' id
+  clonedDimensionValues.forEach(value => {
+    mapById[value.id] = value
+  })
 
-    // parentId can be '', false or 0, this is intentional
-    if (!parentId) {
-      output.push(dimensionValueCopy)
+  // Insert each item in it's parent's children array
+  clonedDimensionValues.forEach(value => {
+    const { parentId } = value
+
+    if (parentId === null) {
+      output.push(value)
     } else {
-      mapById[parentId].children.push(dimensionValueCopy)
+      mapById[parentId].children.push(value)
     }
   })
 

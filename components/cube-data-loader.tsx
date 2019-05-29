@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface IProps {
-  cubeId: number
+  cubeId: string
   render: (state: IState) => React.ReactNode
 }
 
@@ -9,7 +9,7 @@ interface IState {
   isLoading: boolean
   isLoadingDone: boolean
   rawDataPoints?: IRawDataPoint[]
-  metadata?: Array<{}>
+  metadata?: {}
 }
 
 export default class CubeDataLoader extends React.Component<IProps, IState> {
@@ -32,7 +32,12 @@ export default class CubeDataLoader extends React.Component<IProps, IState> {
     const cubeData = await fetch(`/api/cube/${this.props.cubeId}`).then(res =>
       res.json()
     )
-    console.log(cubeData)
+
+    cubeData.rawDataPoints.forEach(dataEntry => {
+      dataEntry.coords = dataEntry.COORDINATE.split('.').map(coord =>
+        Number(coord)
+      )
+    })
 
     this.setState({
       isLoading: false,
