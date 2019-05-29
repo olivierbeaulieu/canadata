@@ -34,7 +34,7 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-intl": "^2.9.0",
-    "recharts": "^1.6.1",
+    "recharts": "^1.6.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
     "styled-components": "^4.2.0",
