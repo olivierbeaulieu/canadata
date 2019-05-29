@@ -184,6 +184,15 @@ export default class ChartView extends React.Component<IProps, IState> {
     return (
       <div>
         <Title level={2}>{this.state.metadata.cubeTitleEn}</Title>
+
+        <AreaChart
+          data={processedData}
+          dimensions={dimensions}
+          uomId={uomId}
+          type={chartType}
+          frequencyCode={this.state.metadata.frequencyCode}
+        />
+
         <Divider />
 
         {this.getDimensionFilters()}
@@ -206,16 +215,6 @@ export default class ChartView extends React.Component<IProps, IState> {
             &nbsp;Area
           </Radio.Button>
         </Radio.Group>
-
-        <Divider />
-
-        <AreaChart
-          data={processedData}
-          dimensions={dimensions}
-          uomId={uomId}
-          type={chartType}
-          frequencyCode={this.state.metadata.frequencyCode}
-        />
       </div>
     )
   }

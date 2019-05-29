@@ -93,7 +93,7 @@ export default function Graph(props: {
         margin={{
           top: 30,
           right: 30,
-          left: 30,
+          left: 0,
           bottom: 30,
         }}
       >
