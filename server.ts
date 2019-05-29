@@ -80,7 +80,7 @@ app
         return
       }
 
-      app.render(req, res, '/index', {
+      app.render(req, res, '/chart', {
         cubeId,
       })
     })
@@ -98,6 +98,3 @@ app
     logger.error(ex.stack)
     process.exit(1)
   })
-
-// 36100450 Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
-// 25100063 // Supply and disposition of crude oil and equivalent

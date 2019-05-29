@@ -1,45 +1,30 @@
 import React from 'react'
-import { Spin } from 'antd'
-import CubeDataLoader from '../components/cube-data-loader'
-import ChartView from '../components/chart-container'
+import Link from 'next/link'
 
-interface IProps {
-  cubeId: string
-}
+const config = [
+  {
+    cubeId: 36100450,
+    title:
+      'Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)',
+  },
+  {
+    cubeId: 25100063,
+    title: 'Supply and disposition of crude oil and equivalent',
+  },
+]
 
 export default class IndexPage extends React.Component<IProps> {
-  private static getInitialProps({ query }: { query: IProps }) {
-    const { cubeId } = query
-
-    return {
-      cubeId,
-    }
-  }
-
   public render(): React.ReactNode {
     return (
-      <CubeDataLoader
-        cubeId={this.props.cubeId}
-        render={(props: {
-          isLoading: boolean
-          isLoadingDone: boolean
-          rawDataPoints: IRawDataPoint[]
-          metadata: ICubeMetadata
-        }) => {
-          const { isLoading, isLoadingDone, rawDataPoints, metadata } = props
-          return (
-            <div>
-              {isLoadingDone ? (
-                <ChartView rawDataPoints={rawDataPoints} metadata={metadata} />
-              ) : (
-                <div className="cover-centered">
-                  <Spin size="large" tip="Loading data..." />
-                </div>
-              )}
-            </div>
-          )
-        }}
-      />
+      <div>
+        <ul>
+          {config.map(entry => (
+            <li key={`index-chart-link-${entry.cubeId}`}>
+              <Link href={`/chart/${entry.cubeId}`}>{entry.title}</Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     )
   }
 }

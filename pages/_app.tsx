@@ -1,6 +1,8 @@
 import React from 'react'
 import App, { Container } from 'next/app'
 import { Layout, Menu, Icon } from 'antd'
+import Head from 'next/head'
+import Link from 'next/link'
 import 'antd/dist/antd.less'
 import '../styles.less'
 
@@ -8,20 +10,22 @@ const { Sider, Footer, Content } = Layout
 
 const LogoView = () => {
   return (
-    <div className="logo">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="25"
-        // height="325"
-        viewBox="-1860 -2000 3720 4030"
-      >
-        <path
-          fill="#d40000"
-          d="m-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27l332-652 332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z"
-        />
-      </svg>
-      Canadata
-    </div>
+    <Link href="/">
+      <a className="logo">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="25"
+          // height="325"
+          viewBox="-1860 -2000 3720 4030"
+        >
+          <path
+            fill="#d40000"
+            d="m-90 2030 45-863a95 95 0 0 0-111-98l-859 151 116-320a65 65 0 0 0-20-73l-941-762 212-99a65 65 0 0 0 34-79l-186-572 542 115a65 65 0 0 0 73-38l105-247 423 454a65 65 0 0 0 111-57l-204-1052 327 189a65 65 0 0 0 91-27l332-652 332 652a65 65 0 0 0 91 27l327-189-204 1052a65 65 0 0 0 111 57l423-454 105 247a65 65 0 0 0 73 38l542-115-186 572a65 65 0 0 0 34 79l212 99-941 762a65 65 0 0 0-20 73l116 320-859-151a95 95 0 0 0-111 98l45 863z"
+          />
+        </svg>
+        Canadata
+      </a>
+    </Link>
   )
 }
 
@@ -73,10 +77,18 @@ class MyApp extends App<IProps> {
 
     return (
       <Container>
-        <link
-          href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
-          rel="stylesheet"
-        />
+        <Head>
+          <title>Canadata</title>
+          <meta
+            name="viewport"
+            content="initial-scale=1.0, width=device-width"
+          />
+          <link
+            href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
+            rel="stylesheet"
+          />
+        </Head>
+
         <Layout hasSider={true}>
           <Sider
             breakpoint="lg"
