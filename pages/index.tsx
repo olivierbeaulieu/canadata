@@ -32,7 +32,9 @@ export default class IndexPage extends React.Component<IProps> {
               {isLoadingDone ? (
                 <ChartView rawDataPoints={rawDataPoints} metadata={metadata} />
               ) : (
-                <Spin size="large" />
+                <div className="cover-centered">
+                  <Spin size="large" tip="Loading data..." />
+                </div>
               )}
             </div>
           )

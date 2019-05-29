@@ -3,6 +3,7 @@ import Title from 'antd/lib/typography/title'
 import { Divider } from 'antd'
 import DimensionSelect from '../components/dimension-select'
 import LineChart from '../components/line-chart'
+import AreaChart from '../components/area-chart'
 import { cloneDeep } from 'lodash'
 
 interface IProps {
@@ -135,8 +136,12 @@ export default class ChartView extends React.Component<IProps, IState> {
   public render(): React.ReactNode {
     const { rawDataPoints } = this.props
     const { dimensions, dimensionFilters } = this.state
+    const uomId = Number(rawDataPoints[0].UOM_ID)
 
-    console.log(this.state)
+    console.log({
+      state: this.state,
+      props: this.props,
+    })
 
     // Apply dimension filters to the raw data points
     const data = this.applyFilters(rawDataPoints, dimensionFilters)
@@ -182,13 +187,12 @@ export default class ChartView extends React.Component<IProps, IState> {
           )
         })}
 
-        <LineChart
+        <AreaChart
           data={processedData}
           dimensions={dimensions}
+          uomId={uomId}
           frequencyCode={this.state.metadata.frequencyCode}
         />
-
-        {/* <pre>{JSON.stringify(this.state.metadata, null, 4)}</pre> */}
       </div>
     )
   }

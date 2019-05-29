@@ -86,5 +86,6 @@ interface IRawDataPoint {
   REF_DATE: string
   VALUE: string
   UOM: string
+  UOM_ID: string
   coords: number[]
 }

@@ -4,15 +4,18 @@ import dayjs from 'dayjs'
 import GraphTooltip from './graph-tooltip'
 import { formatNumbers } from '../utils/format'
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
+  Text,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
+  Label,
   ResponsiveContainer,
 } from 'recharts'
+import { getUomById } from '../utils/codesets'
 
 function getLineDataKey(dimensionName: string) {
   return entry => {
@@ -62,12 +65,14 @@ export default function Graph(props: {
   data: IDataPoint[]
   dimensions: IDimensionsDict
   frequencyCode: number
+  uomId: number
 }): React.ReactElement {
-  const { data, dimensions, frequencyCode } = props
+  const { data, dimensions, frequencyCode, uomId } = props
+  const uom = getUomById(uomId)
 
   return (
     <ResponsiveContainer width="100%" height={600}>
-      <LineChart
+      <AreaChart
         data={data}
         margin={{
           top: 30,
@@ -78,21 +83,35 @@ export default function Graph(props: {
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={getXAxisDataKey.bind(null, frequencyCode)} />
-        <YAxis tickFormatter={formatNumbers} />
+        <YAxis yAxisId="yAxisLeft" axisLine={false} ticks={[]}>
+          <Label
+            value={uom.memberUomEn}
+            position="insideLeft"
+            angle={-90}
+            style={{ textAnchor: 'middle' }}
+          />
+        </YAxis>
+        <YAxis
+          yAxisId="yAxisRight"
+          tickFormatter={formatNumbers}
+          orientation="right"
+        />
         <Tooltip content={GraphTooltip} formatter={formatNumbers} />
         <Legend />
 
         {dimensions[1].member.map((dimensionValue, index) => (
-          <Line
+          <Area
+            yAxisId="yAxisRight"
             type="natural"
-            strokeWidth={2}
             key={`line-${dimensionValue.memberNameEn}`}
             dataKey={getLineDataKey(dimensionValue.memberNameEn)}
             name={dimensionValue.memberNameEn}
             stroke={colors[index] || '#82ca9d'}
+            fillOpacity={0.5}
+            fill={colors[index] || '#82ca9d'}
           />
         ))}
-      </LineChart>
+      </AreaChart>
     </ResponsiveContainer>
   )
 }
