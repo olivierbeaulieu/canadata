@@ -1,7 +1,7 @@
 import React from 'react'
 import { Spin } from 'antd'
 import CubeDataLoader from '../components/cube-data-loader'
-import ChartView from '../components/chart-view'
+import ChartView from '../components/chart-container'
 
 interface IProps {
   cubeId: string
