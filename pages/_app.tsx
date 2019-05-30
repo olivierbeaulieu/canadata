@@ -1,5 +1,7 @@
 import React from 'react'
 import App, { Container } from 'next/app'
+import Router from 'next/router'
+import withGA from 'next-ga'
 import { Layout, Menu, Icon } from 'antd'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -120,4 +122,4 @@ class MyApp extends App<IProps> {
   }
 }
 
-export default MyApp
+export default withGA('UA-136686455-2', Router)(MyApp)
