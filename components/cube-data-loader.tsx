@@ -8,7 +8,7 @@ interface IProps {
 interface IState {
   isLoading: boolean
   isLoadingDone: boolean
-  rawDataPoints?: IRawDataPoint[]
+  rawDataPoints?: RawDataPoint[]
   metadata?: {}
 }
 

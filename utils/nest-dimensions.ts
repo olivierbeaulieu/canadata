@@ -5,8 +5,8 @@ import { cloneDeep } from 'lodash'
  * children property, based on the parentMemberId value they have.
  */
 export default function nestDimensionValues(
-  dimensionMembers: IDimensionMember[]
-): IDimensionMember[] {
+  dimensionMembers: DimensionMember[]
+): DimensionMember[] {
   const output = []
   const mapById = []
 

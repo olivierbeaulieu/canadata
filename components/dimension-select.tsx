@@ -4,7 +4,7 @@ import nestDimensionValues from '../utils/nest-dimensions'
 import slugify from 'underscore.string/slugify'
 
 export default function DimensionSelect(props: {
-  dimension: IDimension
+  dimension: Dimension
   onChange: any
   value: number | number[]
   multiple?: boolean
@@ -16,7 +16,7 @@ export default function DimensionSelect(props: {
   const getRecursiveTreeNode = ({
     dimensionValue,
   }: {
-    dimensionValue: IDimensionMember
+    dimensionValue: DimensionMember
   }) => {
     const { memberId, memberNameEn, children } = dimensionValue
 
@@ -41,6 +41,8 @@ export default function DimensionSelect(props: {
       treeDefaultExpandAll={true}
       dropdownMatchSelectWidth={false}
       onChange={onChange}
+      // treeCheckable={true}
+      // treeCheckStrictly={true}
     >
       {nestedDimensionValues.map(dimension =>
         getRecursiveTreeNode({ dimensionValue: dimension })

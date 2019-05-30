@@ -23,8 +23,8 @@ export default class ChartPage extends React.Component<IProps> {
         render={(props: {
           isLoading: boolean
           isLoadingDone: boolean
-          rawDataPoints: IRawDataPoint[]
-          metadata: ICubeMetadata
+          rawDataPoints: RawDataPoint[]
+          metadata: CubeMetadata
         }) => {
           const { isLoading, isLoadingDone, rawDataPoints, metadata } = props
           return (

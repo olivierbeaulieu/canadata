@@ -1,24 +1,24 @@
 import React from 'react'
-import Title from 'antd/lib/typography/title'
+import Title from 'antd/lib/typography/Title'
 import DimensionSelect from './dimension-select'
 import AreaChart from './chart-view'
 import { cloneDeep } from 'lodash'
 import { Radio, Icon, Divider } from 'antd'
 
 interface IProps {
-  rawDataPoints: IRawDataPoint[]
-  metadata: ICubeMetadata
+  rawDataPoints: RawDataPoint[]
+  metadata: CubeMetadata
 }
 
 interface IDimensionFilters {
-  [key: number]: number | number[]
+  [key: number]: number[]
 }
 
 interface IState {
-  metadata: ICubeMetadata
-  dimensions: IDimensionsDict
+  metadata: CubeMetadata
+  dimensions: DimensionsDict
   dimensionFilters: IDimensionFilters
-  chartType: string
+  chartType: ChartType
 }
 
 export default class ChartView extends React.Component<IProps, IState> {
@@ -33,31 +33,32 @@ export default class ChartView extends React.Component<IProps, IState> {
       dimensions,
       chartType: 'line',
       dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionId) => {
-        const dimension: IDimension = dimensions[dimensionId]
+        const dimension: Dimension = dimensions[dimensionId]
         const dimensionName = dimension.dimensionNameEn
 
         if (dimensionName === 'Geography') {
-          // If multiselect, return an array containing the ids of all members
+          // If Geography, return an array containing the ids of all members
           acc[dimension.dimensionPositionId] = dimension.member.map(
             dimensionMember => dimensionMember.memberId
           )
         } else {
-          // If single select, return the id of the first mbmer
-          acc[dimension.dimensionPositionId] = dimension.member[0].memberId
+          // If single select, return an array with the id of the first mbmer
+          acc[dimension.dimensionPositionId] = [dimension.member[0].memberId]
         }
 
         return acc
       }, {}),
     }
 
-    this.getDimensionFilters = this.getDimensionFilters.bind(this)
+    this.getDimensionFilterSelects = this.getDimensionFilterSelects.bind(this)
   }
 
-  private processRawDataPoints(rawDataPoints: IRawDataPoint[]): IDataPoint[] {
-    const dataPoints: IDataPoint[] = []
-    let currentDataPoint: IDataPoint = null
+  private processRawDataPoints(rawDataPoints: RawDataPoint[]): DataPoint[] {
+    const dataPoints: DataPoint[] = []
+    let currentDataPoint: DataPoint = null
 
     for (const rawDataPoint of rawDataPoints) {
+      // Check if we are done processing a specific date
       if (
         !currentDataPoint ||
         currentDataPoint.date !== rawDataPoint.REF_DATE
@@ -69,7 +70,9 @@ export default class ChartView extends React.Component<IProps, IState> {
         dataPoints.push(currentDataPoint)
       }
 
-      currentDataPoint.values[rawDataPoint.GEO] = Number(rawDataPoint.VALUE)
+      currentDataPoint.values[rawDataPoint.COORDINATE] = Number(
+        rawDataPoint.VALUE
+      )
     }
 
     return dataPoints
@@ -78,13 +81,13 @@ export default class ChartView extends React.Component<IProps, IState> {
   /**
    * Returns an object where the key is the dimension position ID
    */
-  private getDimensionsFromMetadata(metadata: ICubeMetadata): IDimensionsDict {
+  private getDimensionsFromMetadata(metadata: CubeMetadata): DimensionsDict {
     return metadata.dimension.reduce((acc, dimension) => {
       const clonedDimension = cloneDeep(dimension)
 
       // Ensure all dimension members have a children array
       clonedDimension.member.forEach(dimensionMember => {
-        const member = dimensionMember as IDimensionMember
+        const member = dimensionMember as DimensionMember
         member.children = []
       })
 
@@ -95,36 +98,20 @@ export default class ChartView extends React.Component<IProps, IState> {
   }
 
   private applyFilters(
-    rawDataPoints: IRawDataPoint[],
+    rawDataPoints: RawDataPoint[],
     dimensionFilters: IDimensionFilters
-  ): IRawDataPoint[] {
+  ): RawDataPoint[] {
     return rawDataPoints.filter(dataPoint => {
-      // console.log(dataPoint.coords)
       let match = true
 
       for (const id of Object.keys(dimensionFilters)) {
         const dimensionFilterId = Number(id)
         const dimensionFilterValue = dimensionFilters[dimensionFilterId]
+        const coordIndex = Number(dimensionFilterId) - 1
 
-        if (Array.isArray(dimensionFilterValue)) {
-          if (
-            dimensionFilterValue.includes(
-              dataPoint.coords[Number(dimensionFilterId) - 1]
-            ) === false
-          ) {
-            match = false
-            break
-          }
-        } else if (typeof dimensionFilterId === 'number') {
-          const dimensionFilterValue = dimensionFilters[dimensionFilterId]
-
-          if (
-            dimensionFilterValue !==
-            dataPoint.coords[Number(dimensionFilterId) - 1]
-          ) {
-            match = false
-            break
-          }
+        if (!dimensionFilterValue.includes(dataPoint.coords[coordIndex])) {
+          match = false
+          break
         }
       }
 
@@ -132,11 +119,16 @@ export default class ChartView extends React.Component<IProps, IState> {
     })
   }
 
-  private getDimensionFilters(): React.ReactNode {
+  private getDimensionFilterSelects(): React.ReactNode {
     const { dimensions, dimensionFilters } = this.state
 
     return Object.keys(dimensionFilters).map(dimensionId => {
-      const isMultiple = Array.isArray(dimensionFilters[dimensionId])
+      const isMultiple = true
+
+      // If there are zero or one options, don't show the select
+      if (dimensions[dimensionId].member.length <= 1) {
+        return null
+      }
 
       const select = (
         <DimensionSelect
@@ -145,9 +137,11 @@ export default class ChartView extends React.Component<IProps, IState> {
           dimension={dimensions[dimensionId]}
           onChange={value => {
             this.setState(state => {
+              const newValue = isMultiple ? value : [value]
+
               return {
                 dimensionFilters: Object.assign({}, state.dimensionFilters, {
-                  [dimensionId]: value,
+                  [dimensionId]: newValue,
                 }),
               }
             })
@@ -195,7 +189,7 @@ export default class ChartView extends React.Component<IProps, IState> {
 
         <Divider />
 
-        {this.getDimensionFilters()}
+        {this.getDimensionFilterSelects()}
 
         <Title level={4}>Chart Type</Title>
         <Radio.Group

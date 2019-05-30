@@ -1,12 +1,12 @@
-interface IDimension {
+type Dimension = {
   dimensionNameEn: string
   dimensionNameFr: string
   dimensionPositionId: number
   hasUom: boolean
-  member: IDimensionMember[]
+  member: DimensionMember[]
 }
 
-interface IDimensionMember {
+type DimensionMember = {
   classificationCode?: string
   classificationTypeCode?: string
   geoLevel?: number
@@ -17,23 +17,23 @@ interface IDimensionMember {
   parentMemberId: number
   terminated?: number
   vintage?: number
-  children: IDimensionMember[]
+  children: DimensionMember[]
 }
 
-interface IDimensionsDict {
-  [key: number]: IDimension
+type DimensionsDict = {
+  [key: number]: Dimension
 }
 
-interface IDimensionsByIdDict {
-  [key: string]: { [key: string]: IDimensionMember }
+type DimensionsByIdDict = {
+  [key: string]: { [key: string]: DimensionMember }
 }
 
-interface IDataPoint {
+type DataPoint = {
   date: string
   values: { [key: string]: number }
 }
 
-interface ICubeMetadata {
+type CubeMetadata = {
   archiveStatusCode: string
   archiveStatusEn: string
   archiveStatusFr: string
@@ -81,13 +81,14 @@ interface ICubeMetadata {
   surveyCode: string[]
 }
 
-interface IRawDataPoint {
+type RawDataPoint = {
   GEO: string
   REF_DATE: string
   VALUE: string
   UOM: string
   UOM_ID: string
   coords: number[]
+  COORDINATE: string
 }
 
-type IChartType = 'area' | 'line'
+type ChartType = 'area' | 'line'

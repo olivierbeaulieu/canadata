@@ -1,8 +1,12 @@
 import React from 'react'
 import randomColor from 'randomcolor'
 import dayjs from 'dayjs'
-import GraphTooltip from './graph-tooltip'
-import { formatNumbers } from '../utils/format'
+import ChartTooltip from './chart-tooltip'
+import {
+  formatNumbers,
+  coordinatesToText,
+  simplifyCoordinates,
+} from '../utils/format'
 import {
   AreaChart,
   Area,
@@ -18,13 +22,13 @@ import {
 } from 'recharts'
 import { getUomById } from '../utils/codesets'
 
-function getLineDataKey(dimensionName: string) {
+function getDataKey(coordinates: string) {
   return entry => {
-    return entry.values[dimensionName]
+    return entry.values[coordinates]
   }
 }
 
-function getXAxisDataKey(frequencyCode: number, entry: IDataPoint): string {
+function getXAxisDataKey(frequencyCode: number, entry: DataPoint): string {
   const date = dayjs(entry.date)
   /*
    * List of all possible frequency codes:
@@ -63,13 +67,19 @@ const colors = randomColor({
 })
 
 export default function Graph(props: {
-  data: IDataPoint[]
-  dimensions: IDimensionsDict
+  data: DataPoint[]
+  dimensions: DimensionsDict
   frequencyCode: number
   uomId: number
-  type: IChartType
+  type: ChartType
 }): React.ReactElement {
   const { type, data, dimensions, frequencyCode, uomId } = props
+
+  if (data.length === 0) {
+    console.error('Cannot render chart: Data length is zero.')
+    return null
+  }
+
   const uom = getUomById(uomId)
 
   let ChartView, ChartChildView
@@ -85,6 +95,9 @@ export default function Graph(props: {
       ChartChildView = Line
       break
   }
+
+  const coords = Object.keys(data[0].values)
+  const simplifiedCoords = simplifyCoordinates(coords)
 
   return (
     <ResponsiveContainer width="100%" height={600}>
@@ -112,21 +125,43 @@ export default function Graph(props: {
           tickFormatter={formatNumbers}
           orientation="right"
         />
-        <Tooltip content={GraphTooltip} formatter={formatNumbers} />
-        <Legend />
+        <Tooltip
+          content={props => {
+            if (props.active) {
+              // Convert coordinates to strings
+              props.payload.map((entry, index) => {
+                entry.name = coordinatesToText(
+                  simplifiedCoords[index],
+                  dimensions
+                )
+              })
+              return <ChartTooltip {...props} />
+            }
+          }}
+        />
+        <Legend
+          iconType="line"
+          formatter={(value, entry, index) => {
+            return coordinatesToText(simplifiedCoords[index], dimensions)
+          }}
+        />
 
-        {dimensions[1].member.map((dimensionValue, index) => (
-          <ChartChildView
-            yAxisId="yAxisRight"
-            type="natural"
-            key={`line-${dimensionValue.memberNameEn}`}
-            dataKey={getLineDataKey(dimensionValue.memberNameEn)}
-            name={dimensionValue.memberNameEn}
-            stroke={colors[index] || '#82ca9d'}
-            fillOpacity={0.5}
-            fill={colors[index] || '#82ca9d'}
-          />
-        ))}
+        {Object.keys(data[0].values).map((coordinates, index) => {
+          const color = colors[index] || '#82ca9d'
+
+          return (
+            <ChartChildView
+              yAxisId="yAxisRight"
+              type="natural"
+              key={`line-${coordinates}`}
+              dataKey={getDataKey(coordinates)}
+              name={coordinates}
+              stroke={color}
+              fillOpacity={0.5}
+              fill={color}
+            />
+          )
+        })}
       </ChartView>
     </ResponsiveContainer>
   )

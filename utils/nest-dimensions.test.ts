@@ -1,7 +1,7 @@
 import nestDimensionValues from './nest-dimensions'
 
 test('should properly convert a flat structure to a nested structure', () => {
-  const dimensionsArray: IDimensionMember[] = [
+  const dimensionsArray: DimensionMember[] = [
     {
       memberNameEn: 'Grandchild',
       memberId: 11,
