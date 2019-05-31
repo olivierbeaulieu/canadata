@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 import request from 'request-promise-native'
+import logRequestProgress from './utils/log-request-progress'
 import yauzl from 'yauzl'
-import prettyBytes from 'pretty-bytes'
 import logger from './logger'
 
 export async function getCubeMetadata(cubeId: string) {
@@ -28,16 +28,14 @@ export async function getCubeMetadata(cubeId: string) {
 export async function getCubeDataAsCsv(
   cubeId: string
 ): Promise<{ data: string; metadata: string }> {
-  console.log('111')
   const zipUrl = await getFullTableDownloadCSV(cubeId)
   // const zipUrl = `http://localhost:8000/${cubeId}-eng.zip`
-  console.log('222')
-  const zipAsBuffer = await request(zipUrl, { encoding: null }).on(
-    'response',
-    data => {
-      const filesize = prettyBytes(data.headers['content-length'] / 1000)
-      logger.info(`Fetching ${filesize} zip from ${zipUrl}`)
-    }
+
+  const zipAsBuffer = await logRequestProgress(
+    `Loading zipfile for cube ${cubeId}`,
+    request(zipUrl, {
+      encoding: null,
+    })
   )
 
   const zipfile = await getZipfileFromBuffer(zipAsBuffer)
