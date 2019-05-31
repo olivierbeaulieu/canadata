@@ -18,6 +18,10 @@ const config = [
     title:
       'Travel by Canadian residents in Canada and abroad by trip purpose (x 1,000)',
   },
+  {
+    cubeId: 38100054,
+    title: 'Environmental and clean technology employment, Canada and regions',
+  },
 ]
 
 export default class IndexPage extends React.Component<IProps> {
