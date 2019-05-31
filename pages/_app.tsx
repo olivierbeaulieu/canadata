@@ -53,7 +53,7 @@ const MenuView = () => {
 const FooterView = () => {
   return (
     <Footer style={{ textAlign: 'center' }}>
-      Acme Inc. ©2018 Created by olvrb
+      ©2019. Created by Olivier Beaulieu.
     </Footer>
   )
 }
@@ -104,7 +104,7 @@ class MyApp extends App<IProps> {
             <Component {...pageProps} />
           </Content>
 
-          {/* <FooterView /> */}
+          <FooterView />
         </Layout>
       </Container>
     )
