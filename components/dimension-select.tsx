@@ -1,14 +1,17 @@
 import React from 'react'
 import { TreeSelect } from 'antd'
+import { TreeSelectProps } from 'antd/lib/tree-select/interface'
 import nestDimensionValues from '../utils/nest-dimensions'
 import slugify from 'underscore.string/slugify'
 
-export default function DimensionSelect(props: {
+interface IProps {
   dimension: Dimension
-  onChange: any
   value: number | number[]
-  multiple?: boolean
-}) {
+  onChange: (ChangeEvent) => void
+  multiple: boolean
+}
+
+export default function DimensionSelect(props: IProps) {
   const { dimension, onChange, value, multiple } = props
 
   const nestedDimensionValues = nestDimensionValues(dimension.member)
@@ -38,9 +41,10 @@ export default function DimensionSelect(props: {
       key={`select-option-${dimension.dimensionNameEn}`}
       value={value}
       multiple={multiple}
-      treeDefaultExpandAll={true}
-      dropdownMatchSelectWidth={false}
       onChange={onChange}
+      treeDefaultExpandAll={true}
+      dropdownStyle={{ maxHeight: 400, overflow: 'auto' }}
+      dropdownMatchSelectWidth={false}
       // treeCheckable={true}
       // treeCheckStrictly={true}
     >

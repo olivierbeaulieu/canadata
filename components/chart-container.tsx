@@ -1,24 +1,27 @@
 import React from 'react'
-import Title from 'antd/lib/typography/Title'
 import DimensionSelect from './dimension-select'
 import AreaChart from './chart-view'
 import { cloneDeep } from 'lodash'
-import { Radio, Icon, Divider } from 'antd'
+import { Button, Card, Divider, Typography, Drawer } from 'antd'
+import ChartTypeSelect from './chart-type-select'
+
+const { Title, Text } = Typography
+
+type DimensionFilters = {
+  [key: number]: number[]
+}
 
 interface IProps {
   rawDataPoints: RawDataPoint[]
   metadata: CubeMetadata
 }
 
-interface IDimensionFilters {
-  [key: number]: number[]
-}
-
 interface IState {
   metadata: CubeMetadata
   dimensions: DimensionsDict
-  dimensionFilters: IDimensionFilters
+  dimensionFilters: DimensionFilters
   chartType: ChartType
+  isFiltersDrawerOpen: boolean
 }
 
 export default class ChartView extends React.Component<IProps, IState> {
@@ -32,6 +35,7 @@ export default class ChartView extends React.Component<IProps, IState> {
       metadata,
       dimensions,
       chartType: 'line',
+      isFiltersDrawerOpen: false,
       dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionId) => {
         const dimension: Dimension = dimensions[dimensionId]
         const dimensionName = dimension.dimensionNameEn
@@ -51,12 +55,14 @@ export default class ChartView extends React.Component<IProps, IState> {
     }
 
     this.getDimensionFilterSelects = this.getDimensionFilterSelects.bind(this)
+    this.toggleFiltersDrawer = this.toggleFiltersDrawer.bind(this)
   }
 
   private processRawDataPoints(rawDataPoints: RawDataPoint[]): DataPoint[] {
     const dataPoints: DataPoint[] = []
     let currentDataPoint: DataPoint = null
 
+    // Loop over all the raw data points to convert them to a cleaner format
     for (const rawDataPoint of rawDataPoints) {
       // Check if we are done processing a specific date
       if (
@@ -97,9 +103,10 @@ export default class ChartView extends React.Component<IProps, IState> {
     }, {})
   }
 
+  // Filters out the raw data points based on the selected filters
   private applyFilters(
     rawDataPoints: RawDataPoint[],
-    dimensionFilters: IDimensionFilters
+    dimensionFilters: DimensionFilters
   ): RawDataPoint[] {
     return rawDataPoints.filter(dataPoint => {
       let match = true
@@ -151,7 +158,9 @@ export default class ChartView extends React.Component<IProps, IState> {
 
       return (
         <React.Fragment key={`dimension-filter-group-${dimensionId}`}>
-          <Title level={4}>{dimensions[dimensionId].dimensionNameEn}</Title>
+          <Text strong style={{ display: 'block', marginBottom: '5px' }}>
+            {dimensions[dimensionId].dimensionNameEn}
+          </Text>
           {select}
           <Divider />
         </React.Fragment>
@@ -159,25 +168,48 @@ export default class ChartView extends React.Component<IProps, IState> {
     })
   }
 
+  private toggleFiltersDrawer(): void {
+    this.setState(state => {
+      return {
+        isFiltersDrawerOpen: !state.isFiltersDrawerOpen,
+      }
+    })
+  }
+
   public render(): React.ReactNode {
     const { rawDataPoints } = this.props
-    const { chartType, dimensions, dimensionFilters } = this.state
+    const {
+      chartType,
+      dimensions,
+      dimensionFilters,
+      isFiltersDrawerOpen,
+    } = this.state
     const uomId = Number(rawDataPoints[0].UOM_ID)
 
-    console.log({
-      state: this.state,
-      props: this.props,
-    })
+    // console.log({
+    //   state: this.state,
+    //   props: this.props,
+    // })
 
-    // Apply dimension filters to the raw data points
+    // Apply dimension filters to the raw data points, and then process the raw data points into formatted data points
     const data = this.applyFilters(rawDataPoints, dimensionFilters)
-
-    // Convert raw data points into formatted data points
     const processedData = this.processRawDataPoints(data)
 
+    const CardTitle = (
+      <Title ellipsis={{ rows: 3 }} level={4} style={{ marginBottom: 0 }}>
+        {this.state.metadata.cubeTitleEn}
+      </Title>
+    )
+
     return (
-      <div>
-        <Title level={2}>{this.state.metadata.cubeTitleEn}</Title>
+      <Card bordered={false} title={CardTitle}>
+        <Button
+          icon="setting"
+          type="primary"
+          onClick={this.toggleFiltersDrawer}
+        >
+          Show Filters
+        </Button>
 
         <AreaChart
           data={processedData}
@@ -187,29 +219,30 @@ export default class ChartView extends React.Component<IProps, IState> {
           frequencyCode={this.state.metadata.frequencyCode}
         />
 
-        <Divider />
-
-        {this.getDimensionFilterSelects()}
-
-        <Title level={4}>Chart Type</Title>
-        <Radio.Group
-          value={chartType}
-          onChange={event => {
-            this.setState({
-              chartType: event.target.value,
-            })
-          }}
+        <Drawer
+          title="Filters"
+          placement="left"
+          closable={true}
+          onClose={this.toggleFiltersDrawer}
+          visible={isFiltersDrawerOpen}
+          width={300}
         >
-          <Radio.Button value="line">
-            <Icon type="line-chart" />
-            &nbsp;Line
-          </Radio.Button>
-          <Radio.Button value="area">
-            <Icon type="area-chart" />
-            &nbsp;Area
-          </Radio.Button>
-        </Radio.Group>
-      </div>
+          {this.getDimensionFilterSelects()}
+
+          <Text strong style={{ display: 'block', marginBottom: '5px' }}>
+            Chart Type
+          </Text>
+
+          <ChartTypeSelect
+            selected={chartType}
+            onChange={event => {
+              this.setState({
+                chartType: event.target.value,
+              })
+            }}
+          />
+        </Drawer>
+      </Card>
     )
   }
 }

@@ -71,7 +71,7 @@ type CubeMetadata = {
       memberId: number
     }[]
   }[]
-  frequencyCode: number
+  frequencyCode: FrequencyCode
   nbDatapointsCube: number
   nbSeriesCube: number
   productId: string
@@ -92,3 +92,26 @@ type RawDataPoint = {
 }
 
 type ChartType = 'area' | 'line'
+
+type FrequencyCode =
+  | 1
+  | 2
+  | 3
+  | 4
+  | 5
+  | 6
+  | 7
+  | 8
+  | 9
+  | 10
+  | 11
+  | 12
+  | 13
+  | 14
+  | 15
+  | 16
+  | 17
+  | 18
+  | 19
+  | 20
+  | 21

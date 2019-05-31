@@ -1,4 +1,8 @@
-import { coordinatesToText, simplifyCoordinates } from './format'
+import {
+  coordinatesToText,
+  simplifyCoordinates,
+  formatDateByFrequencyCode,
+} from './format'
 
 function getDimensionWithProps(props: {} = {}): Dimension {
   return Object.assign(
@@ -125,4 +129,14 @@ test('simplifyCoordinates should not zero out the first coordinate if there is o
   const result = simplifyCoordinates(['1.1.1.0.0.0'])
 
   expect(result[0]).toEqual('1.0.0.0.0.0')
+})
+
+test('formatDateByFrequencyCode should return the proper format when passed a date and code 12', () => {
+  const result = formatDateByFrequencyCode('2012-01-01', 12)
+  expect(result).toEqual('2012')
+})
+
+test('formatDateByFrequencyCode should return the proper format when passed a date and code 1', () => {
+  const result = formatDateByFrequencyCode('2012-01-01', 1)
+  expect(result).toEqual("Jan '12")
 })

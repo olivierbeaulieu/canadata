@@ -58,7 +58,9 @@
     "object-literal-sort-keys": false,
     "eofline": false,
     "max-classes-per-file": false,
-    "one-variable-per-declaration": false
+    "one-variable-per-declaration": false,
+    "jsx-boolean-value": false,
+    "interface-over-type-literal": false
   },
   "rulesDirectory": []
 }

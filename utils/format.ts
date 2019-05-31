@@ -1,4 +1,5 @@
 import { pull } from 'lodash'
+import dayjs from 'dayjs'
 
 export function formatNumbers(value: number): string {
   return new Intl.NumberFormat('en').format(value)
@@ -37,4 +38,39 @@ export function simplifyCoordinates(coordinates: string[]): string[] {
   }
 
   return coordsAsNumber.map(coord => coord.join('.'))
+}
+
+export function formatDateByFrequencyCode(
+  datestring: string,
+  frequencyCode: FrequencyCode
+): string {
+  const date = dayjs(datestring)
+  /*
+   * List of all possible frequency codes:
+   * 1: Daily
+   * 11: Semi-annual
+   * 12: Annual
+   * 13: Every 2 years
+   * 14: Every 3 years
+   * 15: Every 4 years
+   * 16: Every 5 years
+   * 17: Every 10 years
+   * 18: Occasional
+   * 19: Occasional Quarterly
+   * 2: Weekly
+   * 20: Occasional Monthly
+   * 21: Occasional Daily
+   * 4: Biweekly
+   * 6: Monthly
+   * 7: Bimonthly
+   * 9: Quarterly
+   */
+  switch (frequencyCode) {
+    // Annually
+    case 12:
+      return date.format('YYYY')
+
+    default:
+      return date.format("MMM 'YY")
+  }
 }

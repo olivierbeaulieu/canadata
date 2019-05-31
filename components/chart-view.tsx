@@ -1,12 +1,15 @@
 import React from 'react'
 import randomColor from 'randomcolor'
-import dayjs from 'dayjs'
 import ChartTooltip from './chart-tooltip'
+import { getUomById } from '../utils/codesets'
+
 import {
   formatNumbers,
   coordinatesToText,
   simplifyCoordinates,
+  formatDateByFrequencyCode,
 } from '../utils/format'
+
 import {
   AreaChart,
   Area,
@@ -20,59 +23,21 @@ import {
   ResponsiveContainer,
   LineChart,
 } from 'recharts'
-import { getUomById } from '../utils/codesets'
-
-function getDataKey(coordinates: string) {
-  return entry => {
-    return entry.values[coordinates]
-  }
-}
-
-function getXAxisDataKey(frequencyCode: number, entry: DataPoint): string {
-  const date = dayjs(entry.date)
-  /*
-   * List of all possible frequency codes:
-   * 1: Daily
-   * 11: Semi-annual
-   * 12: Annual
-   * 13: Every 2 years
-   * 14: Every 3 years
-   * 15: Every 4 years
-   * 16: Every 5 years
-   * 17: Every 10 years
-   * 18: Occasional
-   * 19: Occasional Quarterly
-   * 2: Weekly
-   * 20: Occasional Monthly
-   * 21: Occasional Daily
-   * 4: Biweekly
-   * 6: Monthly
-   * 7: Bimonthly
-   * 9: Quarterly
-   */
-  switch (frequencyCode) {
-    // Annually
-    case 12:
-      return date.format('YYYY')
-
-    default:
-      // console.log('frequencyCode', frequencyCode)
-      return date.format("MMM 'YY")
-  }
-}
 
 const colors = randomColor({
   count: 100,
   luminosity: 'dark',
 })
 
-export default function Graph(props: {
+type Props = {
+  uomId: number
   data: DataPoint[]
   dimensions: DimensionsDict
-  frequencyCode: number
-  uomId: number
+  frequencyCode: FrequencyCode
   type: ChartType
-}): React.ReactElement {
+}
+
+export default function Graph(props: Props): React.ReactElement {
   const { type, data, dimensions, frequencyCode, uomId } = props
 
   if (data.length === 0) {
@@ -111,7 +76,14 @@ export default function Graph(props: {
         }}
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={getXAxisDataKey.bind(null, frequencyCode)} />
+
+        <XAxis
+          dataKey={(entry: DataPoint): string => {
+            return formatDateByFrequencyCode(entry.date, frequencyCode)
+          }}
+        />
+
+        {/* Axis only to display the text on the left side */}
         <YAxis yAxisId="yAxisLeft" axisLine={false} ticks={[]}>
           <Label
             value={uom.memberUomEn}
@@ -120,11 +92,14 @@ export default function Graph(props: {
             style={{ textAnchor: 'middle' }}
           />
         </YAxis>
+
+        {/* Axis to display the ticks on the right side */}
         <YAxis
           yAxisId="yAxisRight"
           tickFormatter={formatNumbers}
           orientation="right"
         />
+
         <Tooltip
           content={props => {
             if (props.active) {
@@ -139,11 +114,12 @@ export default function Graph(props: {
             }
           }}
         />
+
         <Legend
           iconType="line"
-          formatter={(value, entry, index) => {
-            return coordinatesToText(simplifiedCoords[index], dimensions)
-          }}
+          formatter={(value, entry, index) =>
+            coordinatesToText(simplifiedCoords[index], dimensions)
+          }
         />
 
         {Object.keys(data[0].values).map((coordinates, index) => {
@@ -153,12 +129,12 @@ export default function Graph(props: {
             <ChartChildView
               yAxisId="yAxisRight"
               type="natural"
-              key={`line-${coordinates}`}
-              dataKey={getDataKey(coordinates)}
               name={coordinates}
+              key={`line-${coordinates}`}
               stroke={color}
-              fillOpacity={0.5}
               fill={color}
+              fillOpacity={0.5}
+              dataKey={entry => entry.values[coordinates]}
             />
           )
         })}

@@ -2,7 +2,7 @@ import React from 'react'
 import App, { Container } from 'next/app'
 import Router from 'next/router'
 import withGA from 'next-ga'
-import { Layout, Menu, Icon } from 'antd'
+import { Layout, Menu, Icon, Row, Col, Card } from 'antd'
 import Head from 'next/head'
 import Link from 'next/link'
 import 'antd/dist/antd.less'
@@ -86,36 +86,25 @@ class MyApp extends App<IProps> {
             content="initial-scale=1.0, width=device-width"
           />
           <link
-            href="https://fonts.googleapis.com/css?family=Open+Sans:400,700&display=swap"
+            href="https://fonts.googleapis.com/css?family=Noto+Sans+HK:400,500,700&display=swap"
             rel="stylesheet"
           />
         </Head>
 
-        <Layout hasSider={true}>
-          <Sider
-            breakpoint="lg"
-            collapsedWidth="0"
-            onBreakpoint={broken => {
-              // console.log(broken)
-            }}
-            onCollapse={(collapsed, type) => {
-              // console.log(collapsed, type)
-            }}
-          >
-            <LogoView />
-            <MenuView />
-          </Sider>
-          <Layout style={{ minHeight: '100vh' }}>
-            {/* <Header style={{ background: '#fff', padding: 0 }} /> */}
+        <Layout style={{ minHeight: '100vh' }}>
+          <Layout.Header style={{ background: '#fff', padding: 0 }}>
+            <Row>
+              <Col>
+                <LogoView />
+              </Col>
+            </Row>
+          </Layout.Header>
 
-            <Content style={{ margin: '24px 16px 0' }}>
-              <div className="main-container">
-                <Component {...pageProps} />
-              </div>
-            </Content>
+          <Content style={{ margin: '24px 16px' }}>
+            <Component {...pageProps} />
+          </Content>
 
-            {/* <FooterView /> */}
-          </Layout>
+          {/* <FooterView /> */}
         </Layout>
       </Container>
     )

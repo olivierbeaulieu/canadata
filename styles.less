@@ -1,25 +1,16 @@
 .logo {
-  color: #333;
+  color: #0647a5;
   font-weight: bold;
   text-align: center;
-  text-transform: uppercase;
-  margin: 20px 0;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: 20px;
+  justify-content: center;
+  font-size: 20px;
 
   svg {
+    height: 30px;
     margin-right: 10px;
   }
-}
-
-.main-container {
-  position: relative;
-  min-height: 500px;
-  padding: 64px 170px 144px 64px;
-  overflow: hidden;
-  background: #fff;
 }
 
 .chart-tooltip {
@@ -47,8 +38,28 @@
 
 .ant-spin-text {
   margin-top: 12px;
+  color: #333;
 }
 
+.ant-select {
+  max-width: 100%;
+}
 .ant-select-selection {
   min-width: 200px;
+}
+
+.ant-layout-header,
+.ant-card {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+.ant-card {
+  & .ant-layout {
+    background: transparent;
+  }
+  & .ant-layout-sider {
+    margin-left: 10px;
+    padding-left: 30px;
+    border-left: 1px solid rgb(232, 232, 232);
+  }
 }

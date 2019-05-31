@@ -19,7 +19,8 @@
           lessLoaderOptions: {
             javascriptEnabled: true,
             modifyVars: {
-              'font-family': `'Open Sans', Helvetica, Arial, sans-serif`,
+              'primary-color': '#0647a5',
+              'font-family': `'Noto Sans HK', Helvetica, Arial, sans-serif`,
               'layout-sider-background': 'white',
               'menu-dark-bg': 'none',
               'menu-dark-item-active-bg': '#065ddc',
