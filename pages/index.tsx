@@ -22,6 +22,11 @@ const config = [
     cubeId: 38100054,
     title: 'Environmental and clean technology employment, Canada and regions',
   },
+  {
+    cubeId: 39100007,
+    title:
+      'Life expectancy and other elements of the life table, Canada and provinces',
+  },
 ]
 
 export default class IndexPage extends React.Component<IProps> {

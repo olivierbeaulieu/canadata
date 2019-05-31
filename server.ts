@@ -1,11 +1,10 @@
 import express from 'express'
 import next from 'next'
-import pino from 'pino'
 import { getCubeDataAsCsv, getCubeMetadata } from './statscan'
 import csvToJson from 'csvtojson'
+import logger from './logger'
 
 const dev = process.env.NODE_ENV !== 'production'
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
 const app = next({ dev })
 const handle = app.getRequestHandler()
 const PORT = process.env.CANADAGRAPHS_PORT || 3000

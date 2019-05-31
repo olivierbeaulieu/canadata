@@ -39,7 +39,7 @@ const LogoView = () => {
 const FooterView = () => {
   return (
     <Footer style={{ textAlign: 'center' }}>
-      ©2019. Created by Olivier Beaulieu.
+      Created by Olivier Beaulieu ©2019
     </Footer>
   )
 }

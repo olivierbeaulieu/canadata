@@ -1,9 +1,8 @@
 import fetch from 'node-fetch'
-import pino from 'pino'
 import request from 'request-promise-native'
 import yauzl from 'yauzl'
-
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' })
+import prettyBytes from 'pretty-bytes'
+import logger from './logger'
 
 export async function getCubeMetadata(cubeId: string) {
   const response = await fetch(
@@ -29,11 +28,17 @@ export async function getCubeMetadata(cubeId: string) {
 export async function getCubeDataAsCsv(
   cubeId: string
 ): Promise<{ data: string; metadata: string }> {
+  console.log('111')
   const zipUrl = await getFullTableDownloadCSV(cubeId)
   // const zipUrl = `http://localhost:8000/${cubeId}-eng.zip`
-
-  logger.info(`Fetching object from ${zipUrl}`)
-  const zipAsBuffer = await request(zipUrl, { encoding: null })
+  console.log('222')
+  const zipAsBuffer = await request(zipUrl, { encoding: null }).on(
+    'response',
+    data => {
+      const filesize = prettyBytes(data.headers['content-length'] / 1000)
+      logger.info(`Fetching ${filesize} zip from ${zipUrl}`)
+    }
+  )
 
   const zipfile = await getZipfileFromBuffer(zipAsBuffer)
 
