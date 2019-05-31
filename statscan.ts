@@ -3,6 +3,7 @@ import request from 'request-promise-native'
 import logRequestProgress from './utils/log-request-progress'
 import yauzl from 'yauzl'
 import logger from './logger'
+import ora from 'ora'
 
 export async function getCubeMetadata(cubeId: string) {
   const response = await fetch(
@@ -67,7 +68,8 @@ async function getFilesContentFromZipFile(
       if (filenames.includes(entry.fileName) === false) return
 
       let fileContent = ''
-      logger.info(`Opening ${entry.fileName}`)
+
+      const fileOpenSpinner = ora(`Opening ${entry.fileName}`).start()
 
       // Add this operation to the list of promises to wait on before returning
       const readFile = new Promise((resolve, reject) => {
@@ -81,7 +83,7 @@ async function getFilesContentFromZipFile(
             fileContent += buffer.toString()
           })
           readStream.on('end', () => {
-            logger.info(`Finished reading ${entry.fileName}`)
+            fileOpenSpinner.succeed()
             filesContent[entry.fileName] = fileContent
             resolve()
           })

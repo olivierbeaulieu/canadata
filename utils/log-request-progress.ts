@@ -1,7 +1,11 @@
 import ora from 'ora'
 import progress from 'request-progress'
+import { RequestPromise } from 'request-promise-native'
 
-export default function logRequestProgress(message: string, request: Request) {
+export default function logRequestProgress(
+  message: string,
+  request: RequestPromise<any>
+) {
   const spinner = ora(message).start()
 
   progress(request)
