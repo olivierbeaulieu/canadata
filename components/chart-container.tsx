@@ -2,7 +2,7 @@ import React from 'react'
 import DimensionSelect from './dimension-select'
 import AreaChart from './chart-view'
 import { cloneDeep } from 'lodash'
-import { Button, Card, Divider, Typography, Drawer } from 'antd'
+import { PageHeader, Button, Card, Divider, Typography, Drawer } from 'antd'
 import ChartTypeSelect from './chart-type-select'
 
 const { Title, Text } = Typography
@@ -178,31 +178,63 @@ export default class ChartView extends React.Component<IProps, IState> {
 
   public render(): React.ReactNode {
     const { rawDataPoints } = this.props
+    const uomId = Number(rawDataPoints[0].UOM_ID)
     const {
       chartType,
+      metadata,
       dimensions,
       dimensionFilters,
       isFiltersDrawerOpen,
     } = this.state
-    const uomId = Number(rawDataPoints[0].UOM_ID)
 
-    // console.log({
-    //   state: this.state,
-    //   props: this.props,
-    // })
+    console.log({
+      state: this.state,
+      // props: this.props,
+    })
 
     // Apply dimension filters to the raw data points, and then process the raw data points into formatted data points
     const data = this.applyFilters(rawDataPoints, dimensionFilters)
     const processedData = this.processRawDataPoints(data)
 
-    const CardTitle = (
-      <Title ellipsis={{ rows: 3 }} level={4} style={{ marginBottom: 0 }}>
-        {this.state.metadata.cubeTitleEn}
-      </Title>
-    )
-
     return (
-      <Card bordered={false} title={CardTitle}>
+      <Card
+        bordered={false}
+        title={
+          <PageHeader
+            onBack={() => window.history.back()}
+            title={metadata.cubeTitleEn}
+            subTitle={`From ${metadata.cubeStartDate} to ${
+              metadata.cubeEndDate
+            }`}
+            // tags={<Tag color="red">Warning</Tag>}
+            // extra={[
+            //   <Button
+            //     key="1"
+            //     icon="setting"
+            //     type="primary"
+            //     onClick={this.toggleFiltersDrawer}
+            //   >
+            //     Show Filters
+            //   </Button>,
+            // ]}
+            // footer={
+            //   <Button
+            //     key="1"
+            //     icon="setting"
+            //     type="primary"
+            //     onClick={this.toggleFiltersDrawer}
+            //   >
+            //     Show Filters
+            //   </Button>
+            // }
+          >
+            {/* <div className="wrap">
+            <div className="content padding">{content}</div>
+            <div className="extraContent">{extraContent}</div>
+          </div> */}
+          </PageHeader>
+        }
+      >
         <Button
           icon="setting"
           type="primary"
