@@ -44,7 +44,6 @@ export function formatDateByFrequencyCode(
   datestring: string,
   frequencyCode: FrequencyCode
 ): string {
-  const date = dayjs(datestring)
   /*
    * List of all possible frequency codes:
    * 1: Daily
@@ -68,9 +67,13 @@ export function formatDateByFrequencyCode(
   switch (frequencyCode) {
     // Annually
     case 12:
-      return date.format('YYYY')
+      return formatDateString(datestring, 'YYYY')
 
     default:
-      return date.format("MMM 'YY")
+      return formatDateString(datestring, "MMM 'YY")
   }
+}
+
+export function formatDateString(datestring: string, format: string): string {
+  return dayjs(datestring).format(format)
 }

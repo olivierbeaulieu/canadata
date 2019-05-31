@@ -4,6 +4,7 @@ import AreaChart from './chart-view'
 import { cloneDeep } from 'lodash'
 import { PageHeader, Button, Card, Divider, Typography, Drawer } from 'antd'
 import ChartTypeSelect from './chart-type-select'
+import { formatDateString } from '../utils/format'
 
 const { Title, Text } = Typography
 
@@ -187,6 +188,8 @@ export default class ChartView extends React.Component<IProps, IState> {
       isFiltersDrawerOpen,
     } = this.state
 
+    const { cubeTitleEn, cubeStartDate, cubeEndDate, frequencyCode } = metadata
+
     console.log({
       state: this.state,
       // props: this.props,
@@ -202,10 +205,11 @@ export default class ChartView extends React.Component<IProps, IState> {
         title={
           <PageHeader
             onBack={() => window.history.back()}
-            title={metadata.cubeTitleEn}
-            subTitle={`From ${metadata.cubeStartDate} to ${
-              metadata.cubeEndDate
-            }`}
+            title={cubeTitleEn}
+            subTitle={`From ${formatDateString(
+              cubeStartDate,
+              'MMMM YYYY'
+            )} to ${formatDateString(cubeEndDate, 'MMMM YYYY')}`}
             // tags={<Tag color="red">Warning</Tag>}
             // extra={[
             //   <Button
@@ -229,9 +233,9 @@ export default class ChartView extends React.Component<IProps, IState> {
             // }
           >
             {/* <div className="wrap">
-            <div className="content padding">{content}</div>
-            <div className="extraContent">{extraContent}</div>
-          </div> */}
+              <div className="content padding">content</div>
+              <div className="extraContent">extraContent</div>
+            </div> */}
           </PageHeader>
         }
       >
@@ -248,7 +252,7 @@ export default class ChartView extends React.Component<IProps, IState> {
           dimensions={dimensions}
           uomId={uomId}
           type={chartType}
-          frequencyCode={this.state.metadata.frequencyCode}
+          frequencyCode={frequencyCode}
         />
 
         <Drawer
