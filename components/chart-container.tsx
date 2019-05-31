@@ -188,7 +188,13 @@ export default class ChartView extends React.Component<IProps, IState> {
       isFiltersDrawerOpen,
     } = this.state
 
-    const { cubeTitleEn, cubeStartDate, cubeEndDate, frequencyCode } = metadata
+    const {
+      productId,
+      cubeTitleEn,
+      cubeStartDate,
+      cubeEndDate,
+      frequencyCode,
+    } = metadata
 
     console.log({
       state: this.state,
@@ -210,33 +216,7 @@ export default class ChartView extends React.Component<IProps, IState> {
               cubeStartDate,
               'MMMM YYYY'
             )} to ${formatDateString(cubeEndDate, 'MMMM YYYY')}`}
-            // tags={<Tag color="red">Warning</Tag>}
-            // extra={[
-            //   <Button
-            //     key="1"
-            //     icon="setting"
-            //     type="primary"
-            //     onClick={this.toggleFiltersDrawer}
-            //   >
-            //     Show Filters
-            //   </Button>,
-            // ]}
-            // footer={
-            //   <Button
-            //     key="1"
-            //     icon="setting"
-            //     type="primary"
-            //     onClick={this.toggleFiltersDrawer}
-            //   >
-            //     Show Filters
-            //   </Button>
-            // }
-          >
-            {/* <div className="wrap">
-              <div className="content padding">content</div>
-              <div className="extraContent">extraContent</div>
-            </div> */}
-          </PageHeader>
+          />
         }
       >
         <Button
@@ -246,7 +226,6 @@ export default class ChartView extends React.Component<IProps, IState> {
         >
           Show Filters
         </Button>
-
         <AreaChart
           data={processedData}
           dimensions={dimensions}
@@ -254,7 +233,6 @@ export default class ChartView extends React.Component<IProps, IState> {
           type={chartType}
           frequencyCode={frequencyCode}
         />
-
         <Drawer
           title="Filters"
           placement="left"
@@ -278,6 +256,14 @@ export default class ChartView extends React.Component<IProps, IState> {
             }}
           />
         </Drawer>
+        <p>
+          <a
+            target="_blank"
+            href={`https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=${productId}01`}
+          >
+            Source: Statistics Canada
+          </a>
+        </p>
       </Card>
     )
   }
