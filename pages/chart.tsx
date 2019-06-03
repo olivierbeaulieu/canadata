@@ -1,11 +1,17 @@
 import React from 'react'
+import CubeMetadataLoader from '../components/cube-metadata-loader'
 import { Spin } from 'antd'
-import CubeDataLoader from '../components/cube-data-loader'
-import ChartContainerView from '../components/chart-container'
+import ChartContainer from '../components/chart-container'
 
 interface IProps {
   cubeId: string
 }
+
+const LoadingView = () => (
+  <div className="cover-centered">
+    <Spin size="large" tip="Loading data..." />
+  </div>
+)
 
 export default class ChartPage extends React.Component<IProps> {
   private static getInitialProps({ query }: { query: IProps }) {
@@ -17,37 +23,20 @@ export default class ChartPage extends React.Component<IProps> {
   }
 
   public render(): React.ReactNode {
+    const cubeId = Number(this.props.cubeId)
+
     return (
-      <CubeDataLoader
-        cubeId={this.props.cubeId}
-        render={(props: {
-          isLoading: boolean
-          isLoadingDone: boolean
-          vectorData: VectorData[]
-          dimensionFilters: DimensionFilters
-          metadata: CubeMetadata
-        }) => {
-          const {
-            isLoading,
-            vectorData,
-            isLoadingDone,
-            metadata,
-            dimensionFilters,
-          } = props
+      <CubeMetadataLoader
+        cubeId={cubeId}
+        loadingView={<LoadingView />}
+        render={({ metadata, dimensionFilters }) => {
+          // This render method will only ever be hit on the client side
           return (
-            <div>
-              {isLoadingDone ? (
-                <ChartContainerView
-                  vectorData={vectorData}
-                  metadata={metadata}
-                  dimensionFilters={dimensionFilters}
-                />
-              ) : (
-                <div className="cover-centered">
-                  <Spin size="large" tip="Loading data..." />
-                </div>
-              )}
-            </div>
+            <ChartContainer
+              cubeId={cubeId}
+              metadata={metadata}
+              dimensionFilters={dimensionFilters}
+            />
           )
         }}
       />

@@ -1,235 +1,148 @@
-import React from 'react'
-import DimensionSelect from './dimension-select'
-import { getUomFromMetadata } from '../statscan-client'
+import React, { useState } from 'react'
+import CubeMetadataLoader from './cube-metadata-loader'
 import ChartView from './chart-view'
-import { cloneDeep } from 'lodash'
-import { PageHeader, Button, Card, Divider, Typography, Drawer } from 'antd'
-import ChartTypeSelect from './chart-type-select'
-import { formatDateString } from '../utils/format'
+import { Button, Icon, PageHeader, Card, Spin } from 'antd'
+import { FiltersView } from './filters-view'
+import VectorDataLoader from './vector-data-loader'
+import { getUomFromMetadata } from '../statscan-client'
+import {
+  formatDateString,
+  getDimensionsFromMetadata,
+  dimensionFilterMapToCoordsList,
+} from '../utils/format'
 
-const { Title, Text } = Typography
-
-interface IProps {
-  vectorData: VectorData[]
+type Props = {
+  cubeId: number
   metadata: CubeMetadata
   dimensionFilters: DimensionFilters
 }
 
-interface IState {
-  metadata: CubeMetadata
-  dimensions: DimensionsDict
-  dimensionFilters: DimensionFilters
-  chartType: ChartType
-  isFiltersDrawerOpen: boolean
-}
+export default function ChartContainer(props: Props): React.ReactElement {
+  const cubeId = Number(props.cubeId)
 
-export default class ChartContainerView extends React.Component<
-  IProps,
-  IState
-> {
-  constructor(props: IProps) {
-    super(props)
+  const [dimensionFilters, setDimensionFilters] = useState(
+    props.dimensionFilters
+  )
 
-    const { metadata, dimensionFilters } = props
-    const dimensions = this.getDimensionsFromMetadata(metadata)
+  const { metadata } = props
+  const { cubeTitleEn, cubeStartDate, cubeEndDate, frequencyCode } = metadata
+  const uomId = getUomFromMetadata(metadata)
+  const dimensionsDict = getDimensionsFromMetadata(metadata)
+  const sourceUrl = `https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=${cubeId}01`
+  const subtitle = `From ${formatDateString(
+    cubeStartDate,
+    'MMMM YYYY'
+  )} to ${formatDateString(cubeEndDate, 'MMMM YYYY')}`
 
-    this.state = {
-      metadata,
-      dimensions,
-      chartType: 'line',
-      isFiltersDrawerOpen: false,
-      dimensionFilters,
-    }
+  const coordinates = dimensionFilterMapToCoordsList(dimensionFilters)
 
-    this.getDimensionFilterSelects = this.getDimensionFilterSelects.bind(this)
-    this.toggleFiltersDrawer = this.toggleFiltersDrawer.bind(this)
-  }
+  const [chartType, setChartType] = useState('line' as ChartType)
+  const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
 
-  /**
-   * Returns an object where the key is the dimension position ID
-   */
-  private getDimensionsFromMetadata(metadata: CubeMetadata): DimensionsDict {
-    return metadata.dimension.reduce((acc, dimension) => {
-      const clonedDimension = cloneDeep(dimension)
-
-      // Ensure all dimension members have a children array
-      clonedDimension.member.forEach(dimensionMember => {
-        const member = dimensionMember as DimensionMember
-        member.children = []
-      })
-
-      acc[dimension.dimensionPositionId] = clonedDimension
-
-      return acc
-    }, {})
-  }
-
-  // Filters out the raw data points based on the selected filters
-  private applyFilters(
-    vectorData: VectorData[],
-    dimensionFilters: DimensionFilters
-  ): VectorData[] {
-    return vectorData.filter(vectorData => {
-      const coords = vectorData.coordinate
-        .split('.')
-        .map(coord => Number(coord))
-      let match = true
-
-      for (const id of Object.keys(dimensionFilters)) {
-        const dimensionFilterId = Number(id)
-        const dimensionFilterValue = dimensionFilters[dimensionFilterId]
-        const coordIndex = Number(dimensionFilterId) - 1
-
-        if (!dimensionFilterValue.includes(coords[coordIndex])) {
-          match = false
-          break
-        }
-      }
-
-      return match
-    })
-  }
-
-  private getDimensionFilterSelects(): React.ReactNode {
-    const { dimensions, dimensionFilters } = this.state
-
-    return Object.keys(dimensionFilters).map(dimensionId => {
-      const isMultiple = true
-
-      // If there are zero or one options, don't show the select
-      if (dimensions[dimensionId].member.length <= 1) {
-        return null
-      }
-
-      const select = (
-        <DimensionSelect
-          multiple={isMultiple}
-          value={dimensionFilters[dimensionId]}
-          dimension={dimensions[dimensionId]}
-          onChange={value => {
-            this.setState(state => {
-              const newValue = isMultiple ? value : [value]
-
-              return {
-                dimensionFilters: Object.assign({}, state.dimensionFilters, {
-                  [dimensionId]: newValue,
-                }),
-              }
+  return (
+    <PageFrame title={cubeTitleEn} subtitle={subtitle} sourceUrl={sourceUrl}>
+      <FiltersView
+        isVisible={isFiltersDrawerOpen}
+        onClose={() => setIsFiltersDrawerOpen(false)}
+        dimensions={dimensionsDict}
+        dimensionFilters={dimensionFilters}
+        chartType={chartType}
+        onDimensionFilterChange={(filterId: string, filterValue: number[]) => {
+          setDimensionFilters(
+            Object.assign({}, dimensionFilters, {
+              [filterId]: filterValue,
             })
-          }}
-        />
-      )
+          )
+        }}
+        onChartTypeChange={chartType => setChartType(chartType)}
+      />
 
-      return (
-        <React.Fragment key={`dimension-filter-group-${dimensionId}`}>
-          <Text strong style={{ display: 'block', marginBottom: '5px' }}>
-            {dimensions[dimensionId].dimensionNameEn}
-          </Text>
-          {select}
-          <Divider />
-        </React.Fragment>
-      )
-    })
-  }
-
-  private toggleFiltersDrawer(): void {
-    this.setState(state => {
-      return {
-        isFiltersDrawerOpen: !state.isFiltersDrawerOpen,
-      }
-    })
-  }
-
-  public render(): React.ReactNode {
-    const { vectorData } = this.props
-
-    const {
-      chartType,
-      metadata,
-      dimensions,
-      dimensionFilters,
-      isFiltersDrawerOpen,
-    } = this.state
-
-    const uomId = getUomFromMetadata(metadata)
-
-    const {
-      productId,
-      cubeTitleEn,
-      cubeStartDate,
-      cubeEndDate,
-      frequencyCode,
-    } = metadata
-
-    console.log({
-      state: this.state,
-      // props: this.props,
-      // vectorData: this.props.vectorData,
-    })
-
-    // Apply dimension filters to the vector data
-    const filteredVectorData = this.applyFilters(vectorData, dimensionFilters)
-
-    return (
-      <Card
-        bordered={false}
-        title={
-          <PageHeader
-            onBack={() => window.history.back()}
-            title={cubeTitleEn}
-            subTitle={`From ${formatDateString(
-              cubeStartDate,
-              'MMMM YYYY'
-            )} to ${formatDateString(cubeEndDate, 'MMMM YYYY')}`}
-          />
-        }
-      >
+      <div>
         <Button
           icon="setting"
           type="primary"
-          onClick={this.toggleFiltersDrawer}
+          onClick={() => setIsFiltersDrawerOpen(true)}
         >
           Show Filters
         </Button>
-        <ChartView
-          data={filteredVectorData}
-          dimensions={dimensions}
-          uomId={uomId}
-          type={chartType}
-          frequencyCode={frequencyCode}
+      </div>
+
+      <VectorDataLoader
+        loadingView={<Spin size="large" tip="Loading data..." />}
+        cubeId={cubeId}
+        startDate={cubeStartDate}
+        endDate={cubeEndDate}
+        coordinates={coordinates}
+        render={({ isLoading, isLoadingDone, vectorData }) => {
+          const data = applyFilters(vectorData, dimensionFilters)
+
+          if (!isLoading && isLoadingDone && vectorData) {
+            return (
+              <ChartView
+                data={data}
+                type={chartType}
+                frequencyCode={frequencyCode}
+                uomId={uomId}
+                dimensions={dimensionsDict}
+              />
+            )
+          }
+          return null
+        }}
+      />
+    </PageFrame>
+  )
+}
+
+function PageFrame(props: {
+  title: string
+  subtitle: string
+  sourceUrl: string
+  children?: React.ReactElement | React.ReactElement[]
+}): React.ReactElement {
+  const { title, subtitle, sourceUrl, children } = props
+
+  return (
+    <Card
+      bordered={false}
+      title={
+        <PageHeader
+          onBack={() => window.history.back()}
+          title={title}
+          subTitle={subtitle}
         />
-        <Drawer
-          title="Filters"
-          placement="left"
-          closable={true}
-          onClose={this.toggleFiltersDrawer}
-          visible={isFiltersDrawerOpen}
-          width={300}
-        >
-          {this.getDimensionFilterSelects()}
+      }
+    >
+      {children}
+      <p>
+        <a target="_blank" href={sourceUrl}>
+          Source: Statistics Canada
+        </a>
+      </p>
+    </Card>
+  )
+}
 
-          <Text strong style={{ display: 'block', marginBottom: '5px' }}>
-            Chart Type
-          </Text>
+// Filters out the raw data points based on the selected filters
+function applyFilters(
+  vectorData: VectorData[],
+  dimensionFilters: DimensionFilters
+): VectorData[] {
+  return vectorData.filter(vectorData => {
+    const coords = vectorData.coordinate.split('.').map(coord => Number(coord))
+    let match = true
 
-          <ChartTypeSelect
-            selected={chartType}
-            onChange={event => {
-              this.setState({
-                chartType: event.target.value,
-              })
-            }}
-          />
-        </Drawer>
-        <p>
-          <a
-            target="_blank"
-            href={`https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=${productId}01`}
-          >
-            Source: Statistics Canada
-          </a>
-        </p>
-      </Card>
-    )
-  }
+    for (const id of Object.keys(dimensionFilters)) {
+      const dimensionFilterId = Number(id)
+      const dimensionFilterValue = dimensionFilters[dimensionFilterId]
+      const coordIndex = Number(dimensionFilterId) - 1
+
+      if (!dimensionFilterValue.includes(coords[coordIndex])) {
+        match = false
+        break
+      }
+    }
+
+    return match
+  })
 }

@@ -1,4 +1,4 @@
-import { pull } from 'lodash'
+import { pull, cloneDeep } from 'lodash'
 import dayjs from 'dayjs'
 
 export function formatNumbers(value: number): string {
@@ -109,4 +109,25 @@ export function dimensionFilterMapToCoordsList(
     .map(coords => coordsArrayToString(coords))
 
   return coords
+}
+
+/**
+ * Returns an object where the key is the dimension position ID
+ */
+export function getDimensionsFromMetadata(
+  metadata: CubeMetadata
+): DimensionsDict {
+  return metadata.dimension.reduce((acc, dimension) => {
+    const clonedDimension = cloneDeep(dimension)
+
+    // Ensure all dimension members have a children array
+    clonedDimension.member.forEach(dimensionMember => {
+      const member = dimensionMember as DimensionMember
+      member.children = []
+    })
+
+    acc[dimension.dimensionPositionId] = clonedDimension
+
+    return acc
+  }, {})
 }
