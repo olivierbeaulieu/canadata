@@ -28,6 +28,10 @@ export default class CubeDataLoader extends React.Component<IProps, IState> {
       isLoadingDone: false,
       vectorData: null,
     }
+
+    this.getVectorDataForCoordinates = this.getVectorDataForCoordinates.bind(
+      this
+    )
   }
 
   public async componentDidMount() {
@@ -36,18 +40,24 @@ export default class CubeDataLoader extends React.Component<IProps, IState> {
     })
 
     const { cubeId, coordinates, startDate, endDate } = this.props
-
-    // Fetch the vector IDs for the required coordinates
-    const vectorIds = await getSeriesInfoFromCubeIdCoord(cubeId, coordinates)
-
-    // Fetch vector data for the entire lifetime of the cube
-    const vectorData = await getVectorDataByRange(vectorIds, startDate, endDate)
+    const vectorData = await this.getVectorDataForCoordinates(coordinates)
 
     this.setState({
       isLoading: false,
       isLoadingDone: true,
       vectorData,
     })
+  }
+
+  private async getVectorDataForCoordinates(
+    coordinates: string[]
+  ): Promise<VectorData[]> {
+    const { cubeId, startDate, endDate } = this.props
+
+    const vectorIds = await getSeriesInfoFromCubeIdCoord(cubeId, coordinates)
+
+    // Fetch vector data for the entire lifetime of the cube
+    return getVectorDataByRange(vectorIds, startDate, endDate)
   }
 
   public render() {
@@ -59,11 +69,20 @@ export default class CubeDataLoader extends React.Component<IProps, IState> {
 
     // Check what needs to be fetched
     const fetchedCoords = vectorData.map(vector => vector.coordinate)
-    this.props.coordinates.forEach(coordinate => {
-      if (fetchedCoords.includes(coordinate) === false) {
-        console.log(`${coordinate} needs to be fetched`)
-      }
+    const needsToBeFetched = this.props.coordinates.filter(coordinate => {
+      return fetchedCoords.includes(coordinate) === false
     })
+
+    // Fetch whatever content might be missing when the filters change
+    if (needsToBeFetched.length) {
+      this.getVectorDataForCoordinates(needsToBeFetched).then(newData =>
+        this.setState(state => {
+          return {
+            vectorData: [...vectorData, ...newData],
+          }
+        })
+      )
+    }
 
     return this.props.render(this.state)
   }
