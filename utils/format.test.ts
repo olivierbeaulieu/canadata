@@ -2,6 +2,8 @@ import {
   coordinatesToText,
   simplifyCoordinates,
   formatDateByFrequencyCode,
+  dimensionFilterMapToCoordsList,
+  coordsArrayToString,
 } from './format'
 
 function getDimensionWithProps(props: {} = {}): Dimension {
@@ -139,4 +141,34 @@ test('formatDateByFrequencyCode should return the proper format when passed a da
 test('formatDateByFrequencyCode should return the proper format when passed a date and code 1', () => {
   const result = formatDateByFrequencyCode('2012-01-01', 1)
   expect(result).toEqual("Jan '12")
+})
+
+test('dimensionFilterMapToCoordsList should return an array of coordinates', () => {
+  const dimensionFilters = {
+    '1': [1, 2, 3],
+    '2': [3],
+    '3': [1, 2],
+  }
+  const expectedResults = [
+    '1.3.1.0.0.0.0.0.0.0',
+    '1.3.2.0.0.0.0.0.0.0',
+    '2.3.1.0.0.0.0.0.0.0',
+    '2.3.2.0.0.0.0.0.0.0',
+    '3.3.1.0.0.0.0.0.0.0',
+    '3.3.2.0.0.0.0.0.0.0',
+  ]
+
+  const result = dimensionFilterMapToCoordsList(dimensionFilters)
+
+  expect(result).toHaveLength(expectedResults.length)
+  expectedResults.forEach(expectedResult => {
+    expect(result).toContain(expectedResult)
+  })
+})
+
+test('coordsArrayToString should return a full string with 10 dimension', () => {
+  const coordsArr = [1, 2, 3]
+
+  const result = coordsArrayToString(coordsArr)
+  expect(result).toEqual('1.2.3.0.0.0.0.0.0.0')
 })

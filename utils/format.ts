@@ -23,6 +23,12 @@ export function coordinatesToText(
     .join(', ')
 }
 
+export function coordsArrayToString(coordinatesArr: number[]): string {
+  return [...coordinatesArr, ...Array(10 - coordinatesArr.length).fill(0)].join(
+    '.'
+  )
+}
+
 export function simplifyCoordinates(coordinates: string[]): string[] {
   const coordsAsNumber = coordinates.map(coord => coord.split('.'))
 
@@ -76,4 +82,31 @@ export function formatDateByFrequencyCode(
 
 export function formatDateString(datestring: string, format: string): string {
   return dayjs(datestring).format(format)
+}
+
+export function dimensionFilterMapToCoordsList(
+  dimensionFilters: DimensionFilters
+): string[] {
+  const coords = Object.keys(dimensionFilters)
+    .reduce((previous: number[][], dimensionId: string): number[][] => {
+      let coords: number[][]
+
+      if (!previous) {
+        // Initialize the array with the first dimensions
+        coords = dimensionFilters[dimensionId].map(filterValue => [filterValue])
+      } else {
+        // For every dimension, clone the existing values and append the new filterId
+        coords = []
+        for (const filterId of dimensionFilters[dimensionId]) {
+          for (const coord of previous) {
+            coords.push([...coord, filterId])
+          }
+        }
+      }
+
+      return coords
+    }, null)
+    .map(coords => coordsArrayToString(coords))
+
+  return coords
 }

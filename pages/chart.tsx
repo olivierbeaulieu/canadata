@@ -1,7 +1,7 @@
 import React from 'react'
 import { Spin } from 'antd'
 import CubeDataLoader from '../components/cube-data-loader'
-import ChartView from '../components/chart-container'
+import ChartContainerView from '../components/chart-container'
 
 interface IProps {
   cubeId: string
@@ -23,14 +23,25 @@ export default class ChartPage extends React.Component<IProps> {
         render={(props: {
           isLoading: boolean
           isLoadingDone: boolean
-          rawDataPoints: RawDataPoint[]
+          vectorData: VectorData[]
+          dimensionFilters: DimensionFilters
           metadata: CubeMetadata
         }) => {
-          const { isLoading, isLoadingDone, rawDataPoints, metadata } = props
+          const {
+            isLoading,
+            vectorData,
+            isLoadingDone,
+            metadata,
+            dimensionFilters,
+          } = props
           return (
             <div>
               {isLoadingDone ? (
-                <ChartView rawDataPoints={rawDataPoints} metadata={metadata} />
+                <ChartContainerView
+                  vectorData={vectorData}
+                  metadata={metadata}
+                  dimensionFilters={dimensionFilters}
+                />
               ) : (
                 <div className="cover-centered">
                   <Spin size="large" tip="Loading data..." />

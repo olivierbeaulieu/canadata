@@ -24,6 +24,37 @@ import {
   LineChart,
 } from 'recharts'
 
+function groupDataByDate(
+  vectorData: VectorData[]
+): Array<{
+  date: string
+  values: {
+    [coord: string]: number
+  }
+}> {
+  const mapByDate: { [key: string]: { [key: string]: number } } = {}
+
+  // Insert all data points in the object
+  vectorData.forEach(vector => {
+    vector.vectorDataPoint.forEach(vectorDataPoint => {
+      if (!mapByDate[vectorDataPoint.refPer]) {
+        mapByDate[vectorDataPoint.refPer] = {}
+      }
+
+      mapByDate[vectorDataPoint.refPer][vector.coordinate] =
+        vectorDataPoint.value
+    })
+  })
+
+  // Convert the object to an array
+  return Object.keys(mapByDate).map(date => {
+    return {
+      date,
+      values: mapByDate[date],
+    }
+  })
+}
+
 const colors = randomColor({
   count: 100,
   luminosity: 'dark',
@@ -31,7 +62,7 @@ const colors = randomColor({
 
 type Props = {
   uomId: number
-  data: DataPoint[]
+  data: VectorData[]
   dimensions: DimensionsDict
   frequencyCode: FrequencyCode
   type: ChartType
@@ -47,8 +78,8 @@ export default function Graph(props: Props): React.ReactElement {
 
   const uom = getUomById(uomId)
 
+  // Select the right views based on the user-selected chart type
   let ChartView, ChartChildView
-
   switch (type) {
     case 'area':
       ChartView = AreaChart
@@ -61,13 +92,14 @@ export default function Graph(props: Props): React.ReactElement {
       break
   }
 
-  const coords = Object.keys(data[0].values)
-  const simplifiedCoords = simplifyCoordinates(coords)
+  const coordinates = data.map(vector => vector.coordinate)
+  const simplifiedCoords = simplifyCoordinates(coordinates)
+  const dataByDate = groupDataByDate(data)
 
   return (
     <ResponsiveContainer width="100%" height={600}>
       <ChartView
-        data={data}
+        data={dataByDate}
         margin={{
           top: 30,
           right: 30,
@@ -76,13 +108,11 @@ export default function Graph(props: Props): React.ReactElement {
         }}
       >
         <CartesianGrid strokeDasharray="3 3" />
-
         <XAxis
           dataKey={(entry: DataPoint): string => {
             return formatDateByFrequencyCode(entry.date, frequencyCode)
           }}
         />
-
         {/* Axis only to display the text on the left side */}
         <YAxis yAxisId="yAxisLeft" axisLine={false} ticks={[]}>
           <Label
@@ -92,14 +122,12 @@ export default function Graph(props: Props): React.ReactElement {
             style={{ textAnchor: 'middle' }}
           />
         </YAxis>
-
         {/* Axis to display the ticks on the right side */}
         <YAxis
           yAxisId="yAxisRight"
           tickFormatter={formatNumbers}
           orientation="right"
         />
-
         <Tooltip
           content={props => {
             if (props.active) {
@@ -114,7 +142,6 @@ export default function Graph(props: Props): React.ReactElement {
             }
           }}
         />
-
         <Legend
           iconType="line"
           formatter={(value, entry, index) =>
@@ -122,19 +149,19 @@ export default function Graph(props: Props): React.ReactElement {
           }
         />
 
-        {Object.keys(data[0].values).map((coordinates, index) => {
+        {data.map((vectorData, index) => {
           const color = colors[index] || '#82ca9d'
 
           return (
             <ChartChildView
               yAxisId="yAxisRight"
               type="natural"
-              name={coordinates}
-              key={`line-${coordinates}`}
+              name={vectorData.coordinate}
+              key={`line-${vectorData.coordinate}`}
               stroke={color}
               fill={color}
               fillOpacity={0.5}
-              dataKey={entry => entry.values[coordinates]}
+              dataKey={entry => entry.values[vectorData.coordinate]}
             />
           )
         })}

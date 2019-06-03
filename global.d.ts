@@ -1,3 +1,7 @@
+type DimensionFilters = {
+  [key: number]: number[]
+}
+
 type Dimension = {
   dimensionNameEn: string
   dimensionNameFr: string
@@ -17,7 +21,7 @@ type DimensionMember = {
   parentMemberId: number
   terminated?: number
   vintage?: number
-  children: DimensionMember[]
+  children?: DimensionMember[]
 }
 
 type DimensionsDict = {
@@ -43,24 +47,7 @@ type CubeMetadata = {
   cubeStartDate: string
   cubeTitleEn: string
   cubeTitleFr: string
-  dimension: {
-    dimensionNameEn: string
-    dimensionNameFr: string
-    dimensionPositionId: number
-    hasUom: boolean
-    member: {
-      classificationCode: string
-      classificationTypeCode: string
-      geoLevel: number
-      memberId: number
-      memberNameEn: string
-      memberNameFr: string
-      memberUomCode?: number
-      parentMemberId: number
-      terminated: number
-      vintage: number
-    }[]
-  }[]
+  dimension: Dimension[]
   footnote: {
     footnoteId: number
     footnotesEn: string
@@ -115,3 +102,24 @@ type FrequencyCode =
   | 19
   | 20
   | 21
+
+type VectorData = {
+  coordinate: string
+  productId: number
+  responseStatusCode: number
+  vectorDataPoint: VectorDataPoint[]
+  vectorId: number
+}
+
+type VectorDataPoint = {
+  refPer: string
+  refPer2: string
+  value: number
+  decimals: number
+  scalarFactorCode: number
+  symbolCode: number
+  statusCode: number
+  securityLevelCode: number
+  releaseTime: string
+  frequencyCode: number
+}

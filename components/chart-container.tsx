@@ -1,6 +1,7 @@
 import React from 'react'
 import DimensionSelect from './dimension-select'
-import AreaChart from './chart-view'
+import { getUomFromMetadata } from '../statscan-client'
+import ChartView from './chart-view'
 import { cloneDeep } from 'lodash'
 import { PageHeader, Button, Card, Divider, Typography, Drawer } from 'antd'
 import ChartTypeSelect from './chart-type-select'
@@ -8,13 +9,10 @@ import { formatDateString } from '../utils/format'
 
 const { Title, Text } = Typography
 
-type DimensionFilters = {
-  [key: number]: number[]
-}
-
 interface IProps {
-  rawDataPoints: RawDataPoint[]
+  vectorData: VectorData[]
   metadata: CubeMetadata
+  dimensionFilters: DimensionFilters
 }
 
 interface IState {
@@ -25,11 +23,14 @@ interface IState {
   isFiltersDrawerOpen: boolean
 }
 
-export default class ChartView extends React.Component<IProps, IState> {
+export default class ChartContainerView extends React.Component<
+  IProps,
+  IState
+> {
   constructor(props: IProps) {
     super(props)
 
-    const { metadata } = props
+    const { metadata, dimensionFilters } = props
     const dimensions = this.getDimensionsFromMetadata(metadata)
 
     this.state = {
@@ -37,52 +38,11 @@ export default class ChartView extends React.Component<IProps, IState> {
       dimensions,
       chartType: 'line',
       isFiltersDrawerOpen: false,
-      dimensionFilters: Object.keys(dimensions).reduce((acc, dimensionId) => {
-        const dimension: Dimension = dimensions[dimensionId]
-        const dimensionName = dimension.dimensionNameEn
-
-        if (dimensionName === 'Geography') {
-          // If Geography, return an array containing the ids of all members
-          acc[dimension.dimensionPositionId] = dimension.member.map(
-            dimensionMember => dimensionMember.memberId
-          )
-        } else {
-          // If single select, return an array with the id of the first mbmer
-          acc[dimension.dimensionPositionId] = [dimension.member[0].memberId]
-        }
-
-        return acc
-      }, {}),
+      dimensionFilters,
     }
 
     this.getDimensionFilterSelects = this.getDimensionFilterSelects.bind(this)
     this.toggleFiltersDrawer = this.toggleFiltersDrawer.bind(this)
-  }
-
-  private processRawDataPoints(rawDataPoints: RawDataPoint[]): DataPoint[] {
-    const dataPoints: DataPoint[] = []
-    let currentDataPoint: DataPoint = null
-
-    // Loop over all the raw data points to convert them to a cleaner format
-    for (const rawDataPoint of rawDataPoints) {
-      // Check if we are done processing a specific date
-      if (
-        !currentDataPoint ||
-        currentDataPoint.date !== rawDataPoint.REF_DATE
-      ) {
-        currentDataPoint = {
-          date: rawDataPoint.REF_DATE,
-          values: {},
-        }
-        dataPoints.push(currentDataPoint)
-      }
-
-      currentDataPoint.values[rawDataPoint.COORDINATE] = Number(
-        rawDataPoint.VALUE
-      )
-    }
-
-    return dataPoints
   }
 
   /**
@@ -106,10 +66,13 @@ export default class ChartView extends React.Component<IProps, IState> {
 
   // Filters out the raw data points based on the selected filters
   private applyFilters(
-    rawDataPoints: RawDataPoint[],
+    vectorData: VectorData[],
     dimensionFilters: DimensionFilters
-  ): RawDataPoint[] {
-    return rawDataPoints.filter(dataPoint => {
+  ): VectorData[] {
+    return vectorData.filter(vectorData => {
+      const coords = vectorData.coordinate
+        .split('.')
+        .map(coord => Number(coord))
       let match = true
 
       for (const id of Object.keys(dimensionFilters)) {
@@ -117,7 +80,7 @@ export default class ChartView extends React.Component<IProps, IState> {
         const dimensionFilterValue = dimensionFilters[dimensionFilterId]
         const coordIndex = Number(dimensionFilterId) - 1
 
-        if (!dimensionFilterValue.includes(dataPoint.coords[coordIndex])) {
+        if (!dimensionFilterValue.includes(coords[coordIndex])) {
           match = false
           break
         }
@@ -178,8 +141,8 @@ export default class ChartView extends React.Component<IProps, IState> {
   }
 
   public render(): React.ReactNode {
-    const { rawDataPoints } = this.props
-    const uomId = Number(rawDataPoints[0].UOM_ID)
+    const { vectorData } = this.props
+
     const {
       chartType,
       metadata,
@@ -187,6 +150,8 @@ export default class ChartView extends React.Component<IProps, IState> {
       dimensionFilters,
       isFiltersDrawerOpen,
     } = this.state
+
+    const uomId = getUomFromMetadata(metadata)
 
     const {
       productId,
@@ -199,11 +164,11 @@ export default class ChartView extends React.Component<IProps, IState> {
     console.log({
       state: this.state,
       // props: this.props,
+      // vectorData: this.props.vectorData,
     })
 
-    // Apply dimension filters to the raw data points, and then process the raw data points into formatted data points
-    const data = this.applyFilters(rawDataPoints, dimensionFilters)
-    const processedData = this.processRawDataPoints(data)
+    // Apply dimension filters to the vector data
+    const filteredVectorData = this.applyFilters(vectorData, dimensionFilters)
 
     return (
       <Card
@@ -226,8 +191,8 @@ export default class ChartView extends React.Component<IProps, IState> {
         >
           Show Filters
         </Button>
-        <AreaChart
-          data={processedData}
+        <ChartView
+          data={filteredVectorData}
           dimensions={dimensions}
           uomId={uomId}
           type={chartType}
