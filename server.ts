@@ -1,7 +1,5 @@
 import express from 'express'
 import next from 'next'
-import { getCubeDataAsCsv, getCubeMetadata } from './statscan'
-import csvToJson from 'csvtojson'
 import logger from './logger'
 
 const dev = process.env.NODE_ENV !== 'production'
@@ -31,45 +29,6 @@ app
     // 	logger.info(req.url, req.headers['user-agent']);
     // 	next();
     // });
-
-    server.get('/api/cube/:cubeId', async (req, res) => {
-      // const cubeId = '36100450' // Revenus, dépenses et solde budgétaire - Administrations publiques, comptes économiques provinciaux et territoriaux (x 1 000 000)
-      // const cubeId = '25100063' // Supply and disposition of crude oil and equivalent1
-      const { cubeId } = req.params
-
-      // The cubeId should be
-      if (isValidCubeId(cubeId) === false) {
-        res.status(400).send('Invalid cubeId')
-        return
-      }
-
-      let csvData
-
-      const newMetadata = await getCubeMetadata(cubeId)
-
-      try {
-        if (cubeCache[cubeId]) {
-          csvData = cubeCache[cubeId]
-        } else {
-          csvData = cubeCache[cubeId] = await getCubeDataAsCsv(cubeId)
-        }
-
-        const rawDataPoints = await csvToJson().fromString(csvData.data)
-        const metadata = await Promise.all(
-          csvData.metadata
-            .split('\n\n')
-            .map(async cube => csvToJson().fromString(cube))
-        )
-
-        res.json({
-          rawDataPoints,
-          metadata: newMetadata,
-        })
-      } catch (e) {
-        logger.error(e)
-        res.send(500)
-      }
-    })
 
     server.get('/chart/:cubeId', async (req, res) => {
       const { cubeId } = req.params

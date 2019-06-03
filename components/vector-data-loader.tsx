@@ -75,13 +75,14 @@ export default class CubeDataLoader extends React.Component<IProps, IState> {
 
     // Fetch whatever content might be missing when the filters change
     if (needsToBeFetched.length) {
-      this.getVectorDataForCoordinates(needsToBeFetched).then(newData =>
+      this.getVectorDataForCoordinates(needsToBeFetched).then(newData => {
+        console.log('newData', newData)
         this.setState(state => {
           return {
-            vectorData: [...vectorData, ...newData],
+            vectorData: [...state.vectorData, ...newData],
           }
         })
-      )
+      })
     }
 
     return this.props.render(this.state)
