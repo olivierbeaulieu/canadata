@@ -1,5 +1,5 @@
 import React from 'react'
-import { getCubeMetadata } from '../statscan-client'
+import { getCubeMetadata } from '../utils/statscan'
 
 type Props = {
   cubeId: number

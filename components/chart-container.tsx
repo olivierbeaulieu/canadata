@@ -4,7 +4,7 @@ import ChartView from './chart-view'
 import { Button, Icon, PageHeader, Card, Spin } from 'antd'
 import { FiltersView } from './filters-view'
 import VectorDataLoader from './vector-data-loader'
-import { getUomFromMetadata } from '../statscan-client'
+import { getUomFromMetadata } from '../utils/statscan'
 import {
   formatDateString,
   getDimensionsFromMetadata,

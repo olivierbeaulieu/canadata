@@ -2,7 +2,7 @@ import React from 'react'
 import {
   getVectorDataByRange,
   getSeriesInfoFromCubeIdCoord,
-} from '../statscan-client'
+} from '../utils/statscan'
 
 interface IProps {
   cubeId: number

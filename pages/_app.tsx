@@ -5,7 +5,6 @@ import withGA from 'next-ga'
 import Head from 'next/head'
 import Link from 'next/link'
 import { Layout, Row, Col } from 'antd'
-import 'antd/dist/antd.less'
 import '../styles.less'
 
 const { Footer, Content } = Layout
