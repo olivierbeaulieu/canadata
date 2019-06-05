@@ -40,7 +40,8 @@ export default function ChartContainer(props: Props): React.ReactElement {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
 
   return (
-    <div>
+    // Why do I need to specify 100%?
+    <div style={{ width: '100%' }}>
       <PageFrame title={cubeTitleEn} subtitle={subtitle} sourceUrl={sourceUrl}>
         <FiltersView
           isVisible={isFiltersDrawerOpen}

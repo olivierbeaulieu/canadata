@@ -90,17 +90,15 @@ export async function getSeriesInfoFromCubeIdCoord(
 }
 
 export async function getVectorDataByRange(
-  vectorIds: string[],
-  startDate: string,
-  endDate: string
+  vectorIds: string[]
 ): Promise<VectorData[]> {
   // Fetch the data points for the required vectors
   const payload = {
     vectorIds,
 
-    // todo this time added at the end, is that right?
-    startDataPointReleaseDate: startDate + 'T00:31',
-    endDataPointReleaseDate: endDate + 'T00:01',
+    // Start end end date hacked to get ALL data ever
+    startDataPointReleaseDate: '1500-01-01T00:01',
+    endDataPointReleaseDate: new Date().toISOString(),
   }
   const vectorData = await statsCanApiRequest(
     'getBulkVectorDataByRange',

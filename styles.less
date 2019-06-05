@@ -1,3 +1,7 @@
+* {
+  max-width: 100%;
+}
+
 .logo {
   color: #0647a5;
   font-weight: bold;
@@ -24,9 +28,6 @@
   }
 }
 
-.ant-select {
-  max-width: 100%;
-}
 .ant-select-selection {
   min-width: 200px;
 }
@@ -37,8 +38,6 @@
 }
 
 .ant-card {
-  max-width: 100%;
-
   & .ant-layout {
     background: transparent;
   }
@@ -64,4 +63,9 @@
 
 .recharts-tooltip-wrapper {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+}
+
+// Ensures the subtitle shows under the title instead of next to it
+.ant-page-header-title-view-title {
+  display: block !important;
 }

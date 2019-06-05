@@ -130,7 +130,7 @@ export default function Graph(props: Props): React.ReactElement {
         />
         <Tooltip
           content={props => {
-            if (props.active) {
+            if (props.active && props.payload) {
               // Convert coordinates to strings
               props.payload.map((entry, index) => {
                 entry.name = coordinatesToText(

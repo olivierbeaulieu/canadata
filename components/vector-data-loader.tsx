@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import LoadingView from './loading-view'
 import {
-  getVectorDataByRange,
+  getVectorDataByRange as getVectorData,
   getSeriesInfoFromCubeIdCoord,
 } from '../utils/statscan'
 
@@ -43,24 +43,6 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
     return () => (didCancel = true)
   }, [...coordinates])
 
-  // // Check what needs to be fetched
-  // const fetchedCoords = vectorData.map(vector => vector.coordinate)
-  // const needsToBeFetched = this.props.coordinates.filter(coordinate => {
-  //   return fetchedCoords.includes(coordinate) === false
-  // })
-
-  // // Fetch whatever content might be missing when the filters change
-  // if (needsToBeFetched.length) {
-  //   this.getVectorDataForCoordinates(needsToBeFetched).then(newData => {
-  //     console.log('newData', newData)
-  //     this.setState(state => {
-  //       return {
-  //         vectorData: [...state.vectorData, ...newData],
-  //       }
-  //     })
-  //   })
-  // }
-
   return (
     <>
       <LoadingView isLoading={isLoading} text="Loading data..." />
@@ -76,6 +58,6 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
     const vectorIds = await getSeriesInfoFromCubeIdCoord(cubeId, coordinates)
 
     // Fetch vector data for the entire lifetime of the cube
-    return getVectorDataByRange(vectorIds, startDate, endDate)
+    return getVectorData(vectorIds)
   }
 }

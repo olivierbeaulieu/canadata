@@ -9,7 +9,7 @@ type Props = {
   text?: string
 }
 
-export default function(props: Props): React.ReactElement {
+export default function LoadingView(props: Props): React.ReactElement {
   const { isLoading, text } = props
 
   if (!isLoading) return null
