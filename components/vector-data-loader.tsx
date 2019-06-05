@@ -1,90 +1,81 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import LoadingView from './loading-view'
 import {
   getVectorDataByRange,
   getSeriesInfoFromCubeIdCoord,
 } from '../utils/statscan'
 
-interface IProps {
+type Props = {
   cubeId: number
   coordinates: string[]
   startDate: string
   endDate: string
-  render: (state: IState) => React.ReactNode
-  loadingView: React.ReactElement
+  render: (state: RenderProps) => React.ReactElement
 }
 
-interface IState {
+type RenderProps = {
   isLoading: boolean
   isLoadingDone: boolean
-  vectorData?: VectorData[]
+  vectorData: VectorData[]
 }
 
-export default class CubeDataLoader extends React.Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props)
+export default function VectorDataLoader(props: Props): React.ReactElement {
+  const { cubeId, coordinates, startDate, endDate, render } = props
 
-    this.state = {
-      isLoading: false,
-      isLoadingDone: false,
-      vectorData: null,
-    }
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingDone, setIsLoadingDone] = useState(false)
+  const [vectorData, setVectorData] = useState(null)
 
-    this.getVectorDataForCoordinates = this.getVectorDataForCoordinates.bind(
-      this
-    )
-  }
+  useEffect(() => {
+    let didCancel = false
 
-  public async componentDidMount() {
-    this.setState({
-      isLoading: true,
+    setIsLoading(true)
+
+    getVectorDataForCoordinates(coordinates).then(vectorData => {
+      // If the view was re-rendered for some reason, ignore the new data we just fetched
+      if (didCancel) return
+
+      setIsLoading(false)
+      setIsLoadingDone(true)
+      setVectorData(vectorData)
     })
 
-    const { cubeId, coordinates, startDate, endDate } = this.props
-    const vectorData = await this.getVectorDataForCoordinates(coordinates)
+    return () => (didCancel = true)
+  }, [coordinates])
 
-    this.setState({
-      isLoading: false,
-      isLoadingDone: true,
-      vectorData,
-    })
-  }
+  // // Check what needs to be fetched
+  // const fetchedCoords = vectorData.map(vector => vector.coordinate)
+  // const needsToBeFetched = this.props.coordinates.filter(coordinate => {
+  //   return fetchedCoords.includes(coordinate) === false
+  // })
 
-  private async getVectorDataForCoordinates(
+  // // Fetch whatever content might be missing when the filters change
+  // if (needsToBeFetched.length) {
+  //   this.getVectorDataForCoordinates(needsToBeFetched).then(newData => {
+  //     console.log('newData', newData)
+  //     this.setState(state => {
+  //       return {
+  //         vectorData: [...state.vectorData, ...newData],
+  //       }
+  //     })
+  //   })
+  // }
+
+  return (
+    <>
+      <LoadingView isLoading={isLoading} text="Loading data..." />
+      {isLoadingDone &&
+        vectorData &&
+        render({ isLoading, isLoadingDone, vectorData })}
+    </>
+  )
+
+  async function getVectorDataForCoordinates(
     coordinates: string[]
   ): Promise<VectorData[]> {
-    const { cubeId, startDate, endDate } = this.props
-
     const vectorIds = await getSeriesInfoFromCubeIdCoord(cubeId, coordinates)
 
     // Fetch vector data for the entire lifetime of the cube
     return getVectorDataByRange(vectorIds, startDate, endDate)
-  }
-
-  public render() {
-    const { isLoading, isLoadingDone, vectorData } = this.state
-
-    if ((isLoading && !isLoadingDone) || !vectorData) {
-      return this.props.loadingView
-    }
-
-    // Check what needs to be fetched
-    const fetchedCoords = vectorData.map(vector => vector.coordinate)
-    const needsToBeFetched = this.props.coordinates.filter(coordinate => {
-      return fetchedCoords.includes(coordinate) === false
-    })
-
-    // Fetch whatever content might be missing when the filters change
-    if (needsToBeFetched.length) {
-      this.getVectorDataForCoordinates(needsToBeFetched).then(newData => {
-        console.log('newData', newData)
-        this.setState(state => {
-          return {
-            vectorData: [...state.vectorData, ...newData],
-          }
-        })
-      })
-    }
-
-    return this.props.render(this.state)
   }
 }

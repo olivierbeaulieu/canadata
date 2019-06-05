@@ -6,6 +6,7 @@ export async function getCubeMetadata(cubeId: number): Promise<CubeMetadata> {
   ]).then(response => response[0])
 
   if (response.status !== 'SUCCESS') {
+    console.error(response)
     throw new Error(`Failed to fetch metadata for productId ${cubeId}`)
   }
 

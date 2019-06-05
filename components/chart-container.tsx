@@ -68,7 +68,6 @@ export default function ChartContainer(props: Props): React.ReactElement {
       </div>
 
       <VectorDataLoader
-        loadingView={<Spin size="large" tip="Loading data..." />}
         cubeId={cubeId}
         startDate={cubeStartDate}
         endDate={cubeEndDate}

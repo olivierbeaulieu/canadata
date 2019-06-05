@@ -1,59 +1,52 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { getCubeMetadata } from '../utils/statscan'
+import LoadingView from './loading-view'
 
 type Props = {
   cubeId: number
-  loadingView: React.ReactNode
-  render: (state: State) => React.ReactNode
+  render: (state: RenderProps) => React.ReactElement
 }
 
-export type State = {
+export type RenderProps = {
   isLoading: boolean
   isLoadingDone: boolean
   metadata: CubeMetadata
   dimensionFilters: DimensionFilters
 }
 
-export default class CubeMetadataLoader extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props)
+export default function CubeMetadataLoader(props: Props): React.ReactElement {
+  const { cubeId, render } = props
+  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingDone, setIsLoadingDone] = useState(false)
+  const [metadata, setMetadata] = useState(null)
+  const [dimensionFilters, setDimensionFilters] = useState(null)
 
-    this.state = {
-      isLoading: false,
-      isLoadingDone: false,
-      metadata: null,
-      dimensionFilters: null,
-    }
-  }
+  useEffect(() => {
+    let didCancel = false
 
-  public async componentDidMount() {
-    this.setState({
-      isLoading: true,
-    })
-
-    const { cubeId } = this.props
+    setIsLoading(true)
 
     // Fetch the metadata, compute the default filters and generate coords to fetch
-    const metadata = await getCubeMetadata(cubeId)
-    const dimensionFilters = getFiltersFromMetadata(metadata)
+    getCubeMetadata(cubeId).then(metadata => {
+      if (didCancel) return
 
-    this.setState({
-      isLoading: false,
-      isLoadingDone: true,
-      dimensionFilters,
-      metadata,
+      const dimensionFilters = getFiltersFromMetadata(metadata)
+      setIsLoading(false)
+      setIsLoadingDone(true)
+      setDimensionFilters(dimensionFilters)
+      setMetadata(metadata)
     })
-  }
 
-  public render() {
-    const { isLoading, isLoadingDone, metadata } = this.state
-
-    if ((isLoading && !isLoadingDone) || !metadata) {
-      return this.props.loadingView
+    return () => {
+      didCancel = true
     }
+  })
 
-    return this.props.render(this.state)
+  if ((isLoading && !isLoadingDone) || !metadata) {
+    return <LoadingView isLoading={true} text="Loading chart..." />
   }
+
+  return render({ isLoading, isLoadingDone, metadata, dimensionFilters })
 }
 
 /**

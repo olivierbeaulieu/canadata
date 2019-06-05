@@ -86,7 +86,14 @@ class MyApp extends App<IProps> {
             </Row>
           </Layout.Header>
 
-          <Content style={{ margin: '24px 16px' }}>
+          <Content
+            style={{
+              margin: '24px 16px',
+              display: 'flex',
+              alignItems: 'stretch',
+              justifyContent: 'stretch',
+            }}
+          >
             <Component {...pageProps} />
           </Content>
 

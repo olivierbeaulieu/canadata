@@ -1,20 +1,13 @@
 import React from 'react'
 import CubeMetadataLoader from '../components/cube-metadata-loader'
-import { Spin } from 'antd'
 import ChartContainer from '../components/chart-container'
 
-interface IProps {
+type Props = {
   cubeId: string
 }
 
-const LoadingView = () => (
-  <div className="cover-centered">
-    <Spin size="large" tip="Loading data..." />
-  </div>
-)
-
-export default class ChartPage extends React.Component<IProps> {
-  private static getInitialProps({ query }: { query: IProps }) {
+export default class ChartPage extends React.Component<Props> {
+  private static getInitialProps({ query }: { query: Props }) {
     const { cubeId } = query
 
     return {
@@ -28,7 +21,6 @@ export default class ChartPage extends React.Component<IProps> {
     return (
       <CubeMetadataLoader
         cubeId={cubeId}
-        loadingView={<LoadingView />}
         render={({ metadata, dimensionFilters }) => {
           // This render method will only ever be hit on the client side
           return (
