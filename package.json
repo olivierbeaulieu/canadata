@@ -40,7 +40,7 @@
     "request": "^2.88.0",
     "request-progress": "^3.0.0",
     "request-promise-native": "^1.0.7",
-    "styled-components": "^4.2.0",
+    "styled-components": "^4.2.1",
     "underscore.string": "^3.3.5",
     "yauzl": "^2.10.0"
   },
