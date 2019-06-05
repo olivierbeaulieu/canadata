@@ -48,7 +48,7 @@
     "@babel/plugin-transform-regenerator": "^7.4.5",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-react": "^7.0.0",
-    "@babel/runtime": "^7.4.4",
+    "@babel/runtime": "^7.4.5",
     "@types/antd": "^1.0.0",
     "@types/jest": "^24.0.13",
     "@types/next": "^8.0.5",
