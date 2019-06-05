@@ -27,7 +27,6 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
   const [vectorData, setVectorData] = useState(null)
 
   useEffect(() => {
-    console.log('ooooh shit', [...coordinates])
     let didCancel = false
 
     setIsLoading(true)
