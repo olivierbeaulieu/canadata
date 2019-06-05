@@ -80,15 +80,6 @@ function getDimensionFilterSelects(props: {
         dimension={dimensions[dimensionId]}
         onChange={value => {
           props.onChange(dimensionId, value)
-          // this.setState(state => {
-          //   const newValue = isMultiple ? value : [value]
-
-          //   return {
-          //     dimensionFilters: Object.assign({}, state.dimensionFilters, {
-          //       [dimensionId]: newValue,
-          //     }),
-          //   }
-          // })
         }}
       />
     )

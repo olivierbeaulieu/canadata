@@ -2,12 +2,12 @@ import React from 'react'
 import randomColor from 'randomcolor'
 import ChartTooltip from './chart-tooltip'
 import { getUomById } from '../utils/codesets'
-
 import {
   formatNumbers,
   coordinatesToText,
   simplifyCoordinates,
   formatDateByFrequencyCode,
+  scalarFactorCodeToText,
 } from '../utils/format'
 
 import {
@@ -77,6 +77,12 @@ export default function Graph(props: Props): React.ReactElement {
   }
 
   const uom = getUomById(uomId)
+  let yAxisLabel = uom.memberUomEn
+  const scalarFactor = scalarFactorCodeToText(
+    data[0].vectorDataPoint[0].scalarFactorCode
+  )
+
+  if (scalarFactor) yAxisLabel += ` (${scalarFactor})`
 
   // Select the right views based on the user-selected chart type
   let ChartView, ChartChildView
@@ -116,7 +122,7 @@ export default function Graph(props: Props): React.ReactElement {
         {/* Axis only to display the text on the left side */}
         <YAxis yAxisId="yAxisLeft" axisLine={false} ticks={[]}>
           <Label
-            value={uom.memberUomEn}
+            value={yAxisLabel}
             position="insideLeft"
             angle={-90}
             style={{ textAnchor: 'middle' }}

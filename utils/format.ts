@@ -131,3 +131,22 @@ export function getDimensionsFromMetadata(
     return acc
   }, {})
 }
+
+export function scalarFactorCodeToText(scalarFactorCode: number): string {
+  /*
+  0	units
+  1	tens
+  2	hundreds
+  3	thousands
+  4	tens of thousands
+  5	hundreds of thousands
+  6	millions
+  7	tens of millions
+  8	hundreds of millions
+  9	billions
+  */
+
+  if (scalarFactorCode === 0) return null
+
+  return `x${formatNumbers(10 ** scalarFactorCode)}`
+}

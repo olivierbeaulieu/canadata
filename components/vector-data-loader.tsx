@@ -41,7 +41,7 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
     })
 
     return () => (didCancel = true)
-  }, [...coordinates])
+  }, [coordinates.join(',')])
 
   return (
     <>

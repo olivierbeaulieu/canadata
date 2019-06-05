@@ -4,6 +4,7 @@ import {
   formatDateByFrequencyCode,
   dimensionFilterMapToCoordsList,
   coordsArrayToString,
+  scalarFactorCodeToText,
 } from './format'
 
 function getDimensionWithProps(props: {} = {}): Dimension {
@@ -171,4 +172,19 @@ test('coordsArrayToString should return a full string with 10 dimension', () => 
 
   const result = coordsArrayToString(coordsArr)
   expect(result).toEqual('1.2.3.0.0.0.0.0.0.0')
+})
+
+test('scalarFactorCodeToText should return the right value for code 0', () => {
+  const result = scalarFactorCodeToText(0)
+  expect(result).toEqual(null)
+})
+
+test('scalarFactorCodeToText should return the right value for code 1', () => {
+  const result = scalarFactorCodeToText(1)
+  expect(result).toEqual('x10')
+})
+
+test('scalarFactorCodeToText should return the right value for code 6', () => {
+  const result = scalarFactorCodeToText(6)
+  expect(result).toEqual('x1,000,000')
 })
