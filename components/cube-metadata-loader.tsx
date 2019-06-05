@@ -40,7 +40,7 @@ export default function CubeMetadataLoader(props: Props): React.ReactElement {
     return () => {
       didCancel = true
     }
-  })
+  }, [cubeId])
 
   if ((isLoading && !isLoadingDone) || !metadata) {
     return <LoadingView isLoading={true} text="Loading chart..." />

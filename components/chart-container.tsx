@@ -40,56 +40,61 @@ export default function ChartContainer(props: Props): React.ReactElement {
   const [isFiltersDrawerOpen, setIsFiltersDrawerOpen] = useState(false)
 
   return (
-    <PageFrame title={cubeTitleEn} subtitle={subtitle} sourceUrl={sourceUrl}>
-      <FiltersView
-        isVisible={isFiltersDrawerOpen}
-        onClose={() => setIsFiltersDrawerOpen(false)}
-        dimensions={dimensionsDict}
-        dimensionFilters={dimensionFilters}
-        chartType={chartType}
-        onDimensionFilterChange={(filterId: string, filterValue: number[]) => {
-          setDimensionFilters(
-            Object.assign({}, dimensionFilters, {
-              [filterId]: filterValue,
-            })
-          )
-        }}
-        onChartTypeChange={chartType => setChartType(chartType)}
-      />
-
-      <div>
-        <Button
-          icon="setting"
-          type="primary"
-          onClick={() => setIsFiltersDrawerOpen(true)}
-        >
-          Show Filters
-        </Button>
-      </div>
-
-      <VectorDataLoader
-        cubeId={cubeId}
-        startDate={cubeStartDate}
-        endDate={cubeEndDate}
-        coordinates={coordinates}
-        render={({ isLoading, isLoadingDone, vectorData }) => {
-          const data = applyFilters(vectorData, dimensionFilters)
-
-          if (!isLoading && isLoadingDone && vectorData) {
-            return (
-              <ChartView
-                data={data}
-                type={chartType}
-                frequencyCode={frequencyCode}
-                uomId={uomId}
-                dimensions={dimensionsDict}
-              />
+    <div>
+      <PageFrame title={cubeTitleEn} subtitle={subtitle} sourceUrl={sourceUrl}>
+        <FiltersView
+          isVisible={isFiltersDrawerOpen}
+          onClose={() => setIsFiltersDrawerOpen(false)}
+          dimensions={dimensionsDict}
+          dimensionFilters={dimensionFilters}
+          chartType={chartType}
+          onDimensionFilterChange={(
+            filterId: string,
+            filterValue: number[]
+          ) => {
+            setDimensionFilters(
+              Object.assign({}, dimensionFilters, {
+                [filterId]: filterValue,
+              })
             )
-          }
-          return null
-        }}
-      />
-    </PageFrame>
+          }}
+          onChartTypeChange={chartType => setChartType(chartType)}
+        />
+
+        <div>
+          <Button
+            icon="setting"
+            type="primary"
+            onClick={() => setIsFiltersDrawerOpen(true)}
+          >
+            Show Filters
+          </Button>
+        </div>
+
+        <VectorDataLoader
+          cubeId={cubeId}
+          startDate={cubeStartDate}
+          endDate={cubeEndDate}
+          coordinates={coordinates}
+          render={({ isLoading, isLoadingDone, vectorData }) => {
+            const data = applyFilters(vectorData, dimensionFilters)
+
+            if (!isLoading && isLoadingDone && vectorData) {
+              return (
+                <ChartView
+                  data={data}
+                  type={chartType}
+                  frequencyCode={frequencyCode}
+                  uomId={uomId}
+                  dimensions={dimensionsDict}
+                />
+              )
+            }
+            return null
+          }}
+        />
+      </PageFrame>
+    </div>
   )
 }
 
@@ -111,13 +116,13 @@ function PageFrame(props: {
           subTitle={subtitle}
         />
       }
+      actions={[
+        <a target="_blank" key="statscan-link" href={sourceUrl}>
+          Source: Statistics Canada
+        </a>,
+      ]}
     >
       {children}
-      <p>
-        <a target="_blank" href={sourceUrl}>
-          Source: Statistics Canada
-        </a>
-      </p>
     </Card>
   )
 }

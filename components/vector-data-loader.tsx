@@ -27,6 +27,7 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
   const [vectorData, setVectorData] = useState(null)
 
   useEffect(() => {
+    console.log('ooooh shit', [...coordinates])
     let didCancel = false
 
     setIsLoading(true)
@@ -41,7 +42,7 @@ export default function VectorDataLoader(props: Props): React.ReactElement {
     })
 
     return () => (didCancel = true)
-  }, [coordinates])
+  }, [...coordinates])
 
   // // Check what needs to be fetched
   // const fetchedCoords = vectorData.map(vector => vector.coordinate)
