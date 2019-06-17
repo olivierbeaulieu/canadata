@@ -19,7 +19,7 @@
     "@babel/preset-typescript": "^7.3.3",
     "@zeit/next-css": "^1.0.1",
     "@zeit/next-less": "^1.0.1",
-    "antd": "^3.19.3",
+    "antd": "^3.19.5",
     "babel-plugin-import": "^1.11.2",
     "dayjs": "^1.8.14",
     "express": "^4.17.1",
