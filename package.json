@@ -28,7 +28,7 @@
     "next-compose-plugins": "^2.2.0",
     "next-ga": "^2.3.4",
     "next-transpile-modules": "^2.3.1",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "ora": "^3.4.0",
     "pino": "^5.12.6",
     "randomcolor": "^0.5.4",
